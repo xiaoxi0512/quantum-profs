@@ -3,7 +3,7 @@
 const DATA_META = {
   "version": "2.0.0",
   "lastUpdated": "2026-08-06",
-  "lastUpdatedTime": "2026-08-06T04:08:36.008Z",
+  "lastUpdatedTime": "2026-08-06T13:53:31+08:00",
   "nextAutoUpdate": "2026-08-07T08:00:00+08:00",
   "autoUpdateSchedule": "每日 08:00 (北京时间)",
   "totalProfessors": 427,
@@ -20,6 +20,10 @@ const DATA_META = {
     {
       "date": "2026-08-06",
       "changes": "大规模扩充：新增约 353 位量子计算及相关应用领域学者（覆盖全国各区域高校、中科院院所、港澳高校及量子企业/国家实验室），收录标准放宽至不论职务大小。"
+    },
+    {
+      "date": "2026-08-06",
+      "changes": "数据清洗：规范化 62 位学者姓名（将“English (中文)”统一改为中文），补全 26 条企业机构记录的规模信息，修复企业卡片上姓名显示为英文及“企业规模: undefined”的问题。"
     }
   ]
 };
@@ -10998,7 +11002,7 @@ const professors = [
     "id": 365,
     "uni": "香港大学",
     "tier": "normal",
-    "name": "Meng Zi-Yang (孟自洋)",
+    "name": "孟自洋",
     "title": "教授",
     "dept": "物理系",
     "directions": [
@@ -11027,7 +11031,7 @@ const professors = [
     "id": 366,
     "uni": "香港大学",
     "tier": "normal",
-    "name": "Wang Yao (姚望)",
+    "name": "姚望",
     "title": "教授",
     "dept": "物理系",
     "directions": [
@@ -11057,7 +11061,7 @@ const professors = [
     "id": 367,
     "uni": "香港大学",
     "tier": "normal",
-    "name": "Zhang Shizhong (张世忠)",
+    "name": "张世忠",
     "title": "教授",
     "dept": "物理系",
     "directions": [
@@ -11085,7 +11089,7 @@ const professors = [
     "id": 368,
     "uni": "香港大学",
     "tier": "normal",
-    "name": "Shen Shunqing (沈顺清)",
+    "name": "沈顺清",
     "title": "教授",
     "dept": "物理系",
     "directions": [
@@ -11143,7 +11147,7 @@ const professors = [
     "id": 370,
     "uni": "香港大学",
     "tier": "normal",
-    "name": "Wan Zhong (万锺)",
+    "name": "万锺",
     "title": "教授",
     "dept": "物理系",
     "directions": [
@@ -11171,7 +11175,7 @@ const professors = [
     "id": 371,
     "uni": "香港大学",
     "tier": "normal",
-    "name": "Zhang Xiang (张翔)",
+    "name": "张翔",
     "title": "教授",
     "dept": "物理系",
     "directions": [
@@ -11198,7 +11202,7 @@ const professors = [
     "id": 372,
     "uni": "香港大学",
     "tier": "normal",
-    "name": "Chau Hoi Fung (周凯枫)",
+    "name": "周凯枫",
     "title": "教授",
     "dept": "物理系",
     "directions": [
@@ -11226,7 +11230,7 @@ const professors = [
     "id": 373,
     "uni": "香港中文大学",
     "tier": "normal",
-    "name": "Liu Renbao (劉仁保)",
+    "name": "劉仁保",
     "title": "卓敏物理学教授",
     "dept": "物理系",
     "directions": [
@@ -11259,7 +11263,7 @@ const professors = [
     "id": 374,
     "uni": "香港中文大学",
     "tier": "normal",
-    "name": "Gu Zhengcheng (顾正澄)",
+    "name": "顾正澄",
     "title": "教授",
     "dept": "物理系",
     "directions": [
@@ -11288,7 +11292,7 @@ const professors = [
     "id": 375,
     "uni": "香港中文大学",
     "tier": "normal",
-    "name": "Hayashi Masahito (林正人)",
+    "name": "林正人",
     "title": "教授",
     "dept": "物理系 / 量子信息研究所",
     "directions": [
@@ -11318,7 +11322,7 @@ const professors = [
     "id": 376,
     "uni": "香港中文大学",
     "tier": "normal",
-    "name": "Chen Hu (胡晨)",
+    "name": "胡晨",
     "title": "助理教授",
     "dept": "物理系",
     "directions": [
@@ -11347,7 +11351,7 @@ const professors = [
     "id": 377,
     "uni": "香港中文大学",
     "tier": "normal",
-    "name": "Lan Tian (蘭天)",
+    "name": "蘭天",
     "title": "助理教授",
     "dept": "物理系",
     "directions": [
@@ -11376,7 +11380,7 @@ const professors = [
     "id": 378,
     "uni": "香港中文大学",
     "tier": "normal",
-    "name": "Li Yufan (李宇凡)",
+    "name": "李宇凡",
     "title": "助理教授",
     "dept": "物理系",
     "directions": [
@@ -11405,7 +11409,7 @@ const professors = [
     "id": 379,
     "uni": "香港科技大学",
     "tier": "normal",
-    "name": "Sen Yang (杨森)",
+    "name": "杨森",
     "title": "副教授",
     "dept": "物理系",
     "directions": [
@@ -11437,7 +11441,7 @@ const professors = [
     "id": 380,
     "uni": "香港科技大学",
     "tier": "normal",
-    "name": "Law Kam Tuen (罗锦团)",
+    "name": "罗锦团",
     "title": "教授",
     "dept": "物理系",
     "directions": [
@@ -11466,7 +11470,7 @@ const professors = [
     "id": 381,
     "uni": "香港科技大学",
     "tier": "normal",
-    "name": "Zeng Bei (曾蓓)",
+    "name": "曾蓓",
     "title": "教授",
     "dept": "物理系",
     "directions": [
@@ -11496,7 +11500,7 @@ const professors = [
     "id": 382,
     "uni": "香港科技大学",
     "tier": "normal",
-    "name": "Junwei Liu (劉軍偉)",
+    "name": "劉軍偉",
     "title": "助理教授",
     "dept": "物理系",
     "directions": [
@@ -11524,7 +11528,7 @@ const professors = [
     "id": 383,
     "uni": "香港科技大学(广州)",
     "tier": "normal",
-    "name": "Xin Wang (王鑫)",
+    "name": "王鑫",
     "title": "副教授",
     "dept": "人工智能学域",
     "directions": [
@@ -11555,7 +11559,7 @@ const professors = [
     "id": 384,
     "uni": "香港城市大学",
     "tier": "normal",
-    "name": "Jeff Ou (區澤宇)",
+    "name": "區澤宇",
     "title": "讲座教授",
     "dept": "物理系",
     "directions": [
@@ -11583,7 +11587,7 @@ const professors = [
     "id": 385,
     "uni": "香港城市大学",
     "tier": "normal",
-    "name": "Danfeng Denver Li (李丹楓)",
+    "name": "李丹楓",
     "title": "副教授",
     "dept": "物理系 / 香港高等研究院",
     "directions": [
@@ -11611,7 +11615,7 @@ const professors = [
     "id": 386,
     "uni": "香港城市大学",
     "tier": "normal",
-    "name": "Yang Qian (錢揚)",
+    "name": "錢揚",
     "title": "助理教授",
     "dept": "物理系",
     "directions": [
@@ -11639,7 +11643,7 @@ const professors = [
     "id": 387,
     "uni": "香港城市大学",
     "tier": "normal",
-    "name": "Lin Jing (林静)",
+    "name": "林静",
     "title": "助理教授",
     "dept": "物理系",
     "directions": [
@@ -11666,7 +11670,7 @@ const professors = [
     "id": 388,
     "uni": "香港城市大学",
     "tier": "normal",
-    "name": "Wei Ye (韋業)",
+    "name": "韋業",
     "title": "助理教授",
     "dept": "物理系",
     "directions": [
@@ -11693,7 +11697,7 @@ const professors = [
     "id": 389,
     "uni": "香港城市大学",
     "tier": "normal",
-    "name": "Zhedong Zhang (張哲東)",
+    "name": "張哲東",
     "title": "副教授",
     "dept": "物理系",
     "directions": [
@@ -11721,7 +11725,7 @@ const professors = [
     "id": 390,
     "uni": "香港城市大学",
     "tier": "normal",
-    "name": "Xin Sunny Wang (王欣)",
+    "name": "王欣",
     "title": "副教授",
     "dept": "物理系",
     "directions": [
@@ -11750,7 +11754,7 @@ const professors = [
     "id": 391,
     "uni": "香港理工大学",
     "tier": "normal",
-    "name": "Liu Ai-Qun (刘爱群)",
+    "name": "刘爱群",
     "title": "量子科学与工程讲席教授",
     "dept": "电机及电子工程系 / 量子技术研究院",
     "directions": [
@@ -11780,7 +11784,7 @@ const professors = [
     "id": 392,
     "uni": "香港理工大学",
     "tier": "normal",
-    "name": "Li Yuan (李远)",
+    "name": "李远",
     "title": "助理教授",
     "dept": "量子技术研究院(PRI)",
     "directions": [
@@ -11809,7 +11813,7 @@ const professors = [
     "id": 393,
     "uni": "香港理工大学",
     "tier": "normal",
-    "name": "Su Daiqin (苏戴钦)",
+    "name": "苏戴钦",
     "title": "助理教授",
     "dept": "电机及电子工程系",
     "directions": [
@@ -11840,7 +11844,7 @@ const professors = [
     "id": 394,
     "uni": "香港理工大学",
     "tier": "normal",
-    "name": "Raymond Nung-sing SZE (施能胜)",
+    "name": "施能胜",
     "title": "副教授",
     "dept": "应用数学系",
     "directions": [
@@ -11869,7 +11873,7 @@ const professors = [
     "id": 395,
     "uni": "香港理工大学",
     "tier": "normal",
-    "name": "Lip Ket Chin (陈立国)",
+    "name": "陈立国",
     "title": "副教授",
     "dept": "电机及电子工程系",
     "directions": [
@@ -11898,7 +11902,7 @@ const professors = [
     "id": 396,
     "uni": "澳门大学",
     "tier": "normal",
-    "name": "Tang Zikang (湯子康)",
+    "name": "湯子康",
     "title": "教授",
     "dept": "应用物理及材料工程研究院",
     "directions": [
@@ -11927,7 +11931,7 @@ const professors = [
     "id": 397,
     "uni": "澳门大学",
     "tier": "normal",
-    "name": "Ian Hou (殷灝)",
+    "name": "殷灝",
     "title": "副教授",
     "dept": "应用物理及材料工程研究院",
     "directions": [
@@ -11956,7 +11960,7 @@ const professors = [
     "id": 398,
     "uni": "澳门大学",
     "tier": "normal",
-    "name": "Lai Shen (賴屾)",
+    "name": "賴屾",
     "title": "助理教授",
     "dept": "应用物理及材料工程研究院",
     "directions": [
@@ -11984,7 +11988,7 @@ const professors = [
     "id": 399,
     "uni": "澳门大学",
     "tier": "normal",
-    "name": "Sun Pengzhan (孫鵬展)",
+    "name": "孫鵬展",
     "title": "助理教授",
     "dept": "应用物理及材料工程研究院",
     "directions": [
@@ -12011,7 +12015,7 @@ const professors = [
     "id": 400,
     "uni": "澳门大学",
     "tier": "normal",
-    "name": "Zhang Jihua (张吉化)",
+    "name": "张吉化",
     "title": "教授",
     "dept": "应用物理及材料工程研究院",
     "directions": [
@@ -12037,7 +12041,7 @@ const professors = [
     "id": 401,
     "uni": "澳门大学",
     "tier": "normal",
-    "name": "Sun Handong (孙汉东)",
+    "name": "孙汉东",
     "title": "杰出教授",
     "dept": "应用物理及材料工程研究院",
     "directions": [
@@ -12066,7 +12070,7 @@ const professors = [
     "id": 402,
     "uni": "本源量子",
     "tier": "normal",
-    "name": "Guo Guoping (郭国平)",
+    "name": "郭国平",
     "title": "董事长 / 首席科学家",
     "dept": "超导量子计算",
     "directions": [
@@ -12095,14 +12099,15 @@ const professors = [
     "enterprise": {
       "name": "本源量子",
       "role": "董事长/首席科学家",
-      "url": "https://www.originqc.com.cn"
+      "url": "https://www.originqc.com.cn",
+      "stock": "Pre-IPO，近30亿融资"
     }
   },
   {
     "id": 403,
     "uni": "本源量子",
     "tier": "normal",
-    "name": "Guo Guangcan (郭光灿)",
+    "name": "郭光灿",
     "title": "联合创始人 / 首席科学顾问",
     "dept": "量子信息",
     "directions": [
@@ -12129,14 +12134,15 @@ const professors = [
     "enterprise": {
       "name": "本源量子",
       "role": "联合创始人/首席科学顾问",
-      "url": "https://www.originqc.com.cn"
+      "url": "https://www.originqc.com.cn",
+      "stock": "Pre-IPO，近30亿融资"
     }
   },
   {
     "id": 404,
     "uni": "本源量子",
     "tier": "normal",
-    "name": "Zhang Hui (张辉)",
+    "name": "张辉",
     "title": "总经理",
     "dept": "公司管理 / 量子计算",
     "directions": [
@@ -12162,14 +12168,15 @@ const professors = [
     "enterprise": {
       "name": "本源量子",
       "role": "总经理",
-      "url": "https://www.originqc.com.cn"
+      "url": "https://www.originqc.com.cn",
+      "stock": "Pre-IPO，近30亿融资"
     }
   },
   {
     "id": 405,
     "uni": "国盾量子",
     "tier": "normal",
-    "name": "Peng Chengzhi (彭承志)",
+    "name": "彭承志",
     "title": "首席科学家",
     "dept": "量子通信",
     "directions": [
@@ -12197,14 +12204,15 @@ const professors = [
     "enterprise": {
       "name": "国盾量子",
       "role": "首席科学家",
-      "url": "https://www.quantum-info.com"
+      "url": "https://www.quantum-info.com",
+      "stock": "科创板上市，市值约百亿"
     }
   },
   {
     "id": 406,
     "uni": "图灵量子",
     "tier": "normal",
-    "name": "Jin Xianmin (金贤敏)",
+    "name": "金贤敏",
     "title": "创始人 / CEO",
     "dept": "光量子计算",
     "directions": [
@@ -12232,14 +12240,15 @@ const professors = [
     "enterprise": {
       "name": "图灵量子",
       "role": "创始人/CEO",
-      "url": "https://www.turingq.com"
+      "url": "https://www.turingq.com",
+      "stock": "多轮融资，估值数十亿"
     }
   },
   {
     "id": 407,
     "uni": "玻色量子",
     "tier": "normal",
-    "name": "Wen Kai (文凯)",
+    "name": "文凯",
     "title": "董事长 / CEO",
     "dept": "光量子计算",
     "directions": [
@@ -12267,14 +12276,15 @@ const professors = [
     "enterprise": {
       "name": "玻色量子",
       "role": "董事长/CEO",
-      "url": "https://www.bosonq.com"
+      "url": "https://www.bosonq.com",
+      "stock": "多轮融资，亿元级"
     }
   },
   {
     "id": 408,
     "uni": "华翊量子",
     "tier": "normal",
-    "name": "Duan Luming (段路明)",
+    "name": "段路明",
     "title": "创始人 / 首席科学家",
     "dept": "离子阱量子计算",
     "directions": [
@@ -12301,14 +12311,15 @@ const professors = [
     "enterprise": {
       "name": "华翊量子",
       "role": "创始人/首席科学家",
-      "url": "https://www.hyquant.com"
+      "url": "https://www.hyquant.com",
+      "stock": "多轮融资，亿元级"
     }
   },
   {
     "id": 409,
     "uni": "华翊量子",
     "tier": "normal",
-    "name": "Yao Lin (姚麟)",
+    "name": "姚麟",
     "title": "CEO",
     "dept": "离子阱量子计算",
     "directions": [
@@ -12334,14 +12345,15 @@ const professors = [
     "enterprise": {
       "name": "华翊量子",
       "role": "CEO",
-      "url": "https://www.hyquant.com"
+      "url": "https://www.hyquant.com",
+      "stock": "多轮融资，亿元级"
     }
   },
   {
     "id": 410,
     "uni": "国仪量子",
     "tier": "normal",
-    "name": "He Yu (贺羽)",
+    "name": "贺羽",
     "title": "董事长兼总经理",
     "dept": "量子精密测量",
     "directions": [
@@ -12369,14 +12381,15 @@ const professors = [
     "enterprise": {
       "name": "国仪量子",
       "role": "董事长兼总经理",
-      "url": "https://www.ciqtek.com"
+      "url": "https://www.ciqtek.com",
+      "stock": "多轮融资，独角兽"
     }
   },
   {
     "id": 411,
     "uni": "弧光量子",
     "tier": "normal",
-    "name": "Ying Shenggang (应圣钢)",
+    "name": "应圣钢",
     "title": "创始人 / 董事长",
     "dept": "量子软件",
     "directions": [
@@ -12404,14 +12417,15 @@ const professors = [
     "enterprise": {
       "name": "弧光量子",
       "role": "创始人/董事长",
-      "url": ""
+      "url": "",
+      "stock": "早期融资"
     }
   },
   {
     "id": 412,
     "uni": "中科酷原",
     "tier": "normal",
-    "name": "Tang Biao (汤彪)",
+    "name": "汤彪",
     "title": "创始人 / 董事长",
     "dept": "原子量子精密测量",
     "directions": [
@@ -12439,14 +12453,15 @@ const professors = [
     "enterprise": {
       "name": "中科酷原",
       "role": "创始人/董事长",
-      "url": ""
+      "url": "",
+      "stock": "早期融资"
     }
   },
   {
     "id": 413,
     "uni": "合肥国家实验室",
     "tier": "cas",
-    "name": "Pan Jianwei (潘建伟)",
+    "name": "潘建伟",
     "title": "主任 / 院士",
     "dept": "量子信息",
     "directions": [
@@ -12475,14 +12490,15 @@ const professors = [
     "enterprise": {
       "name": "合肥国家实验室",
       "role": "主任",
-      "url": "https://www.hfnl.ml.cas.cn"
+      "url": "https://www.hfnl.ml.cas.cn",
+      "stock": "未公开"
     }
   },
   {
     "id": 414,
     "uni": "合肥国家实验室",
     "tier": "cas",
-    "name": "Zhu Xiaobo (朱晓波)",
+    "name": "朱晓波",
     "title": "研究员",
     "dept": "超导量子计算",
     "directions": [
@@ -12509,14 +12525,15 @@ const professors = [
     "enterprise": {
       "name": "合肥国家实验室",
       "role": "研究员",
-      "url": "https://www.hfnl.ml.cas.cn"
+      "url": "https://www.hfnl.ml.cas.cn",
+      "stock": "未公开"
     }
   },
   {
     "id": 415,
     "uni": "合肥国家实验室",
     "tier": "cas",
-    "name": "Lu Chaoyang (陆朝阳)",
+    "name": "陆朝阳",
     "title": "研究员",
     "dept": "光量子计算",
     "directions": [
@@ -12544,14 +12561,15 @@ const professors = [
     "enterprise": {
       "name": "合肥国家实验室",
       "role": "研究员",
-      "url": "https://www.hfnl.ml.cas.cn"
+      "url": "https://www.hfnl.ml.cas.cn",
+      "stock": "未公开"
     }
   },
   {
     "id": 416,
     "uni": "合肥国家实验室",
     "tier": "cas",
-    "name": "Zhang Qiang (张强)",
+    "name": "张强",
     "title": "研究员",
     "dept": "量子通信",
     "directions": [
@@ -12578,14 +12596,15 @@ const professors = [
     "enterprise": {
       "name": "合肥国家实验室",
       "role": "研究员",
-      "url": "https://www.hfnl.ml.cas.cn"
+      "url": "https://www.hfnl.ml.cas.cn",
+      "stock": "未公开"
     }
   },
   {
     "id": 417,
     "uni": "合肥国家实验室",
     "tier": "cas",
-    "name": "Bao Xiaohui (包小辉)",
+    "name": "包小辉",
     "title": "研究员",
     "dept": "量子网络",
     "directions": [
@@ -12612,14 +12631,15 @@ const professors = [
     "enterprise": {
       "name": "合肥国家实验室",
       "role": "研究员",
-      "url": "https://www.hfnl.ml.cas.cn"
+      "url": "https://www.hfnl.ml.cas.cn",
+      "stock": "未公开"
     }
   },
   {
     "id": 418,
     "uni": "合肥国家实验室",
     "tier": "cas",
-    "name": "Xu Feihu (徐飞虎)",
+    "name": "徐飞虎",
     "title": "研究员",
     "dept": "量子通信",
     "directions": [
@@ -12647,14 +12667,15 @@ const professors = [
     "enterprise": {
       "name": "合肥国家实验室",
       "role": "研究员",
-      "url": "https://www.hfnl.ml.cas.cn"
+      "url": "https://www.hfnl.ml.cas.cn",
+      "stock": "未公开"
     }
   },
   {
     "id": 419,
     "uni": "合肥国家实验室",
     "tier": "cas",
-    "name": "Peng Chengzhi (彭承志)",
+    "name": "彭承志",
     "title": "研究员",
     "dept": "量子卫星",
     "directions": [
@@ -12682,14 +12703,15 @@ const professors = [
     "enterprise": {
       "name": "合肥国家实验室",
       "role": "研究员",
-      "url": "https://www.hfnl.ml.cas.cn"
+      "url": "https://www.hfnl.ml.cas.cn",
+      "stock": "未公开"
     }
   },
   {
     "id": 420,
     "uni": "北京量子信息科学研究院(BAQIS)",
     "tier": "cas",
-    "name": "Yuan Zhiliang (袁之良)",
+    "name": "袁之良",
     "title": "首席科学家",
     "dept": "量子通信",
     "directions": [
@@ -12716,14 +12738,15 @@ const professors = [
     "enterprise": {
       "name": "北京量子信息科学研究院(BAQIS)",
       "role": "首席科学家",
-      "url": "http://www.baqis.ac.cn"
+      "url": "http://www.baqis.ac.cn",
+      "stock": "未公开"
     }
   },
   {
     "id": 421,
     "uni": "北京量子信息科学研究院(BAQIS)",
     "tier": "cas",
-    "name": "Xu Hongqi (徐洪起)",
+    "name": "徐洪起",
     "title": "首席科学家",
     "dept": "半导体量子器件",
     "directions": [
@@ -12750,14 +12773,15 @@ const professors = [
     "enterprise": {
       "name": "北京量子信息科学研究院(BAQIS)",
       "role": "首席科学家",
-      "url": "http://www.baqis.ac.cn"
+      "url": "http://www.baqis.ac.cn",
+      "stock": "未公开"
     }
   },
   {
     "id": 422,
     "uni": "北京量子信息科学研究院(BAQIS)",
     "tier": "cas",
-    "name": "Hu Chengyong (胡承勇)",
+    "name": "胡承勇",
     "title": "研究员",
     "dept": "量子信息",
     "directions": [
@@ -12782,14 +12806,15 @@ const professors = [
     "enterprise": {
       "name": "北京量子信息科学研究院(BAQIS)",
       "role": "研究员",
-      "url": "http://www.baqis.ac.cn"
+      "url": "http://www.baqis.ac.cn",
+      "stock": "未公开"
     }
   },
   {
     "id": 423,
     "uni": "深圳量子科学与工程研究院",
     "tier": "cas",
-    "name": "Yu Dapeng (俞大鹏)",
+    "name": "俞大鹏",
     "title": "院长 / 院士",
     "dept": "量子材料与量子工程",
     "directions": [
@@ -12818,14 +12843,15 @@ const professors = [
     "enterprise": {
       "name": "深圳量子科学与工程研究院",
       "role": "院长",
-      "url": "https://siqse.sustech.edu.cn"
+      "url": "https://siqse.sustech.edu.cn",
+      "stock": "未公开"
     }
   },
   {
     "id": 424,
     "uni": "深圳量子科学与工程研究院",
     "tier": "cas",
-    "name": "Xu Yuan (徐源)",
+    "name": "徐源",
     "title": "助理研究员",
     "dept": "超导量子实验室",
     "directions": [
@@ -12851,14 +12877,15 @@ const professors = [
     "enterprise": {
       "name": "深圳量子科学与工程研究院",
       "role": "助理研究员",
-      "url": "https://siqse.sustech.edu.cn"
+      "url": "https://siqse.sustech.edu.cn",
+      "stock": "未公开"
     }
   },
   {
     "id": 425,
     "uni": "之江实验室",
     "tier": "cas",
-    "name": "Shi Yaoyun (施尧耘)",
+    "name": "施尧耘",
     "title": "副主任 / 量子计算研究中心主任",
     "dept": "量子计算",
     "directions": [
@@ -12886,14 +12913,15 @@ const professors = [
     "enterprise": {
       "name": "之江实验室",
       "role": "副主任/量子计算研究中心主任",
-      "url": "https://www.zhejianglab.org"
+      "url": "https://www.zhejianglab.org",
+      "stock": "未公开"
     }
   },
   {
     "id": 426,
     "uni": "之江实验室",
     "tier": "cas",
-    "name": "Zeng Weilei (曾威磊)",
+    "name": "曾威磊",
     "title": "高级研究专员",
     "dept": "量子计算研究中心",
     "directions": [
@@ -12920,14 +12948,15 @@ const professors = [
     "enterprise": {
       "name": "之江实验室",
       "role": "高级研究专员",
-      "url": "https://www.zhejianglab.org"
+      "url": "https://www.zhejianglab.org",
+      "stock": "未公开"
     }
   },
   {
     "id": 427,
     "uni": "鹏城实验室",
     "tier": "cas",
-    "name": "Yu Dapeng (俞大鹏)",
+    "name": "俞大鹏",
     "title": "量子计算研究中心责任院士",
     "dept": "量子计算研究中心",
     "directions": [
@@ -12955,7 +12984,8 @@ const professors = [
     "enterprise": {
       "name": "鹏城实验室",
       "role": "量子计算研究中心责任院士",
-      "url": "https://www.pcl.ac.cn"
+      "url": "https://www.pcl.ac.cn",
+      "stock": "未公开"
     }
   }
 ];

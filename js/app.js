@@ -467,31 +467,29 @@ function setupSearch() {
   });
 }
 
-// ===== 顶部区域滚动折叠（标题栏+筛选标签栏折叠，搜索框和面包屑始终保留） =====
-function setupHeaderCollapse() {
+// ===== 顶部区域滚动折叠（标题栏+筛选标签栏分别折叠，搜索框和面包屑始终保留） =====
+function setupStickyCollapse() {
   const header = document.getElementById('header');
   const controls = document.getElementById('controls');
   const headerTrigger = document.getElementById('headerTrigger');
   const controlsTrigger = document.getElementById('controlsTrigger');
   if (!header || !controls) return;
 
-  let collapsed = false;
   const setCollapsed = (c) => {
-    collapsed = c;
     header.classList.toggle('collapsed', c);
     controls.classList.toggle('collapsed', c);
   };
 
   window.addEventListener('scroll', () => {
     const y = window.scrollY || document.documentElement.scrollTop;
-    setCollapsed(y > 100);
+    setCollapsed(y > 80);
   }, { passive: true });
 
   if (headerTrigger) {
-    headerTrigger.addEventListener('click', () => setCollapsed(!collapsed));
+    headerTrigger.addEventListener('click', () => header.classList.toggle('collapsed'));
   }
   if (controlsTrigger) {
-    controlsTrigger.addEventListener('click', () => setCollapsed(!collapsed));
+    controlsTrigger.addEventListener('click', () => controls.classList.toggle('collapsed'));
   }
 }
 
@@ -501,7 +499,7 @@ document.addEventListener('DOMContentLoaded', function() {
   buildFilterBar();
   setupFilters();
   setupSearch();
-  setupHeaderCollapse();
+  setupStickyCollapse();
   renderProfessors();
   updateBreadcrumb(null);
   startAutoCheck();

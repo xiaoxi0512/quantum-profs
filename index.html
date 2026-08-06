@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>国内高校量子计算课题组教授信息汇总（2026版）</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="header">
+<h1>国内高校量子计算课题组教授信息汇总</h1>
+<div class="subtitle" id="subtitle">多文件项目 (HTML+CSS+JS) | 数据更新：2026-08-05</div>
+</div>
+
+<div class="update-bar" id="updateBar">
+  <div class="update-info">
+    <span class="update-item"><span class="update-icon">🕐</span> 自动更新：<strong>每日 08:00</strong></span>
+    <span class="update-item"><span class="update-icon">📅</span> 最后更新：<strong id="lastUpdateDate">--</strong></span>
+    <span class="update-item"><span class="update-icon">⏭️</span> 下次更新：<strong id="nextUpdateDate">--</strong></span>
+    <span class="update-item"><span class="update-icon">📊</span> 版本：<strong id="dataVersion">--</strong></span>
+  </div>
+  <div class="update-actions">
+    <button class="update-btn" id="checkUpdateBtn" onclick="checkForUpdates()">🔄 检查更新</button>
+    <button class="update-btn" id="refreshBtn" onclick="window.location.reload()">↻ 刷新页面</button>
+  </div>
+  <div class="update-status" id="updateStatus"></div>
+</div>
+
+<div class="controls">
+<input type="text" class="search-box" id="searchBox" placeholder="🔍 搜索教授姓名、高校、研究方向、邮箱...">
+<div class="filters">
+<span class="filter-label">技术路线:</span>
+<button class="filter-btn active" data-tech="all">全部</button>
+<button class="filter-btn" data-tech="super">超导</button>
+<button class="filter-btn" data-tech="semi">半导体</button>
+<button class="filter-btn" data-tech="ion">离子阱</button>
+<button class="filter-btn" data-tech="photo">光量子</button>
+<button class="filter-btn" data-tech="atom">中性原子</button>
+<button class="filter-btn" data-tech="topo">拓扑</button>
+<button class="filter-btn" data-tech="theory">理论算法</button>
+</div>
+<div class="filters" style="margin-top:6px">
+<span class="filter-label">商业应用:</span>
+<button class="filter-btn active" data-app="all">全部</button>
+<button class="filter-btn" data-app="chemistry">材料化学</button>
+<button class="filter-btn" data-app="biology">生物医药</button>
+<button class="filter-btn" data-app="finance">金融科技</button>
+<button class="filter-btn" data-app="security">网络安全</button>
+<button class="filter-btn" data-app="weather">气象预测</button>
+<button class="filter-btn" data-app="encryption">信息加密</button>
+<button class="filter-btn" data-app="optimization">优化问题</button>
+<button class="filter-btn" data-app="ai">人工智能</button>
+<button class="filter-btn" data-app="materials">材料科学</button>
+</div>
+<div class="filters" style="margin-top:6px">
+<span class="filter-label">院校层次:</span>
+<button class="filter-btn active" data-tier="all">全部</button>
+<button class="filter-btn" data-tier="985">985/C9</button>
+<button class="filter-btn" data-tier="211">211</button>
+<button class="filter-btn" data-tier="cas">中科院</button>
+<button class="filter-btn" data-tier="normal">普通本科</button>
+<span style="width:12px;display:inline-block"></span>
+<span class="filter-label">特色:</span>
+<button class="filter-btn ent-btn" data-tech="enterprise">🏢 有企业</button>
+</div>
+</div>
+
+<div class="stats" id="stats"></div>
+<div class="content" id="content"></div>
+
+<div class="disclaimer">
+<p>⚠️ <strong>数据准确性说明</strong>：本报告所有信息均来自各高校官方教师主页、课题组网站及公开新闻报道。</p>
+<p>邮箱和电话均来自高校官方页面或课题组招聘信息，如有变更请以官方主页为准。点击每位教授卡片可展开查看详细信息。</p>
+<p>点击"搜索最新"按钮可实时查看该教授最新科研动态，点击"知网论文"可查看最新发表论文。</p>
+<p>本报告不保证信息的绝对准确性和时效性。如有错误请反馈，我们将及时更正。</p>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+# 忽略本地元数据与依赖
+.workbuddy/
+node_modules/
+*.log
+
+# 忽略本地临时部署副本
+quantum-profs-deploy/

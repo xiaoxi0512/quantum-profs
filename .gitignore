@@ -5,3 +5,6 @@ node_modules/
 
 # 忽略本地临时部署副本
 quantum-profs-deploy/
+
+# 忽略 SSH 部署密钥（不入库，仅本地用于自动 push）
+.ssh/

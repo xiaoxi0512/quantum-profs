@@ -455,12 +455,35 @@ function setupSearch() {
   });
 }
 
+// ===== 顶部标题栏滚动折叠 =====
+function setupHeaderCollapse() {
+  const header = document.getElementById('header');
+  const trigger = document.getElementById('headerTrigger');
+  if (!header) return;
+
+  let collapsed = false;
+  const setCollapsed = (c) => {
+    collapsed = c;
+    header.classList.toggle('collapsed', c);
+  };
+
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY || document.documentElement.scrollTop;
+    setCollapsed(y > 100);
+  }, { passive: true });
+
+  if (trigger) {
+    trigger.addEventListener('click', () => setCollapsed(!collapsed));
+  }
+}
+
 // ===== 初始化 =====
 document.addEventListener('DOMContentLoaded', function() {
   initUpdateBar();
   buildFilterBar();
   setupFilters();
   setupSearch();
+  setupHeaderCollapse();
   renderProfessors();
   updateBreadcrumb(null);
   startAutoCheck();

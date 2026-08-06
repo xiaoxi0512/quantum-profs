@@ -3,6 +3,7 @@
 let currentTechFilter = 'all';
 let currentAppFilter = 'all';
 let currentTierFilter = 'all';
+let currentFeatureFilter = '';
 let searchTerm = '';
 let updateCheckInterval = null;
 
@@ -154,7 +155,7 @@ function updateBreadcrumb(prof) {
   const bc = document.getElementById('breadcrumb');
   if (!bc) return;
   const parts = ['<span class="bc-home" onclick="resetAll()">🏠 主页</span>'];
-  if (currentTechFilter === 'enterprise') {
+  if (currentFeatureFilter === 'enterprise') {
     parts.push('<span class="bc-sep">›</span><span class="bc-item">🏢 有企业</span>');
   } else if (currentTechFilter !== 'all') {
     const t = TECH_TAGS[currentTechFilter];
@@ -181,6 +182,7 @@ function resetAll() {
   currentTechFilter = 'all';
   currentAppFilter = 'all';
   currentTierFilter = 'all';
+  currentFeatureFilter = '';
   searchTerm = '';
   const sb = document.getElementById('searchBox');
   if (sb) sb.value = '';
@@ -341,10 +343,13 @@ function renderProfessors() {
   let filtered = professors;
 
   // 技术路线筛选
-  if (currentTechFilter === 'enterprise') {
-    filtered = filtered.filter(p => p.enterprise);
-  } else if (currentTechFilter !== 'all') {
+  if (currentTechFilter !== 'all') {
     filtered = filtered.filter(p => p.tech && p.tech.includes(currentTechFilter));
+  }
+
+  // 特色筛选（有企业等）
+  if (currentFeatureFilter === 'enterprise') {
+    filtered = filtered.filter(p => p.enterprise);
   }
 
   // 商业应用筛选
@@ -374,7 +379,7 @@ function renderProfessors() {
   // 统计
   const uniCount = new Set(filtered.map(p => p.uni)).size;
   let statsText = `共 <strong>${filtered.length}</strong> 位教授 | <strong>${uniCount}</strong> 所高校/机构`;
-  if (currentTechFilter === 'enterprise') statsText += ' | 🏢 已筛选有企业的教授';
+  if (currentFeatureFilter === 'enterprise') statsText += ' | 🏢 已筛选有企业的教授';
   if (currentAppFilter !== 'all') statsText += ` | 已筛选应用领域: ${(APP_TAGS[currentAppFilter] || { name: currentAppFilter }).name}`;
   document.getElementById('stats').innerHTML = statsText;
 
@@ -424,6 +429,7 @@ function setupFilters() {
       const tech = this.dataset.tech;
       const app = this.dataset.app;
       const tier = this.dataset.tier;
+      const feature = this.dataset.feature;
 
       if (tech !== undefined) {
         currentTechFilter = tech;
@@ -437,6 +443,12 @@ function setupFilters() {
         currentTierFilter = tier;
         document.querySelectorAll('.filter-btn[data-tier]').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
+      } else if (feature !== undefined) {
+        // 特色筛选（有企业等）独立于技术路线，不影响技术路线“全部”的选中状态
+        currentFeatureFilter = (currentFeatureFilter === feature) ? '' : feature;
+        const active = currentFeatureFilter === feature;
+        document.querySelectorAll('.filter-btn[data-feature]').forEach(b => b.classList.remove('active'));
+        if (active) this.classList.add('active');
       }
       // 切换筛选时收起已展开卡片并同步面包屑
       document.querySelectorAll('.prof-card.expanded').forEach(c => c.classList.remove('expanded'));

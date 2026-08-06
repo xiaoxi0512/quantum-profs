@@ -11,10 +11,12 @@
 <div class="sticky-wrap" id="stickyWrap">
   <div class="header" id="header">
     <div class="header-main">
-      <h1>国内高校量子计算课题组教授信息汇总</h1>
-      <div class="subtitle" id="subtitle">多文件项目 (HTML+CSS+JS) | 数据更新：2026-08-05</div>
+      <div class="header-main-inner">
+        <h1>国内高校量子计算课题组教授信息汇总</h1>
+        <div class="subtitle" id="subtitle">多文件项目 (HTML+CSS+JS) | 数据更新：2026-08-05</div>
+      </div>
     </div>
-    <div class="header-trigger" id="headerTrigger" title="点击或悬停展开标题">
+    <div class="header-trigger" id="headerTrigger" title="点击展开标题">
       <span>国内高校量子计算课题组教授信息汇总</span>
       <span class="trigger-hint">▲</span>
     </div>
@@ -31,26 +33,29 @@
       <span class="trigger-hint">▲</span>
     </div>
     <div class="controls-main">
-      <div class="filters">
-        <span class="filter-label">技术路线:</span>
-        <button class="filter-btn active" data-tech="all">全部</button>
-        <span id="techFiltersRow"></span>
-      </div>
-      <div class="filters" style="margin-top:6px">
-        <span class="filter-label">商业应用:</span>
-        <button class="filter-btn active" data-app="all">全部</button>
-        <span id="appFiltersRow"></span>
-      </div>
-      <div class="filters" style="margin-top:6px">
-        <span class="filter-label">院校层次:</span>
-        <button class="filter-btn active" data-tier="all">全部</button>
-        <button class="filter-btn" data-tier="985">985/C9</button>
-        <button class="filter-btn" data-tier="211">211</button>
-        <button class="filter-btn" data-tier="cas">中科院</button>
-        <button class="filter-btn" data-tier="normal">普通本科</button>
-        <span style="width:12px;display:inline-block"></span>
-        <span class="filter-label">特色:</span>
-        <button class="filter-btn ent-btn" data-tech="enterprise">🏢 有企业</button>
+      <div class="controls-main-inner">
+        <div class="filters">
+          <span class="filter-label">技术路线:</span>
+          <button class="filter-btn active" data-tech="all">全部</button>
+          <span id="techFiltersRow"></span>
+        </div>
+        <div class="filters" style="margin-top:6px">
+          <span class="filter-label">商业应用:</span>
+          <button class="filter-btn active" data-app="all">全部</button>
+          <span id="appFiltersRow"></span>
+        </div>
+        <div class="filters" style="margin-top:6px">
+          <span class="filter-label">院校层次:</span>
+          <button class="filter-btn active" data-tier="all">全部</button>
+          <button class="filter-btn" data-tier="985">985/C9</button>
+          <button class="filter-btn" data-tier="211">211</button>
+          <button class="filter-btn" data-tier="cas">中科院</button>
+          <button class="filter-btn" data-tier="normal">普通本科</button>
+        </div>
+        <div class="filters" style="margin-top:6px">
+          <span class="filter-label">特色:</span>
+          <button class="filter-btn ent-btn" data-feature="enterprise">🏢 有企业</button>
+        </div>
       </div>
     </div>
   </div>

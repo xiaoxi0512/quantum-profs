@@ -130,14 +130,16 @@ function renderCard(p) {
   else if (p.tech && p.tech.length > 0) cardClass += ' tc-' + p.tech[0];
 
   // 技术路线标签
-  const techTags = (p.tech || []).map(t =>
-    `<span class="tech-tag" style="background:${TECH_TAGS[t].color}">${TECH_TAGS[t].name}</span>`
-  ).join('');
+  const techTags = (p.tech || []).map(t => {
+    const tag = TECH_TAGS[t] || { name: t, color: '#8a8a8a' };
+    return `<span class="tech-tag" style="background:${tag.color}">${tag.name}</span>`;
+  }).join('');
 
   // 商业应用标签
-  const appTags = (p.apps || []).map(a =>
-    `<span class="app-tag" style="background:${APP_TAGS[a].color}">${APP_TAGS[a].name}</span>`
-  ).join('');
+  const appTags = (p.apps || []).map(a => {
+    const tag = APP_TAGS[a] || { name: a, color: '#8a8a8a' };
+    return `<span class="app-tag" style="background:${tag.color}">${tag.name}</span>`;
+  }).join('');
 
   // 企业标识
   const entBadge = p.enterprise ? `<span class="enterprise-badge">🏢 ${p.enterprise.name}</span>` : '';
@@ -290,7 +292,7 @@ function renderProfessors() {
   const uniCount = new Set(filtered.map(p => p.uni)).size;
   let statsText = `共 <strong>${filtered.length}</strong> 位教授 | <strong>${uniCount}</strong> 所高校/机构`;
   if (currentTechFilter === 'enterprise') statsText += ' | 🏢 已筛选有企业的教授';
-  if (currentAppFilter !== 'all') statsText += ` | 已筛选应用领域: ${APP_TAGS[currentAppFilter].name}`;
+  if (currentAppFilter !== 'all') statsText += ` | 已筛选应用领域: ${(APP_TAGS[currentAppFilter] || { name: currentAppFilter }).name}`;
   document.getElementById('stats').innerHTML = statsText;
 
   if (filtered.length === 0) {

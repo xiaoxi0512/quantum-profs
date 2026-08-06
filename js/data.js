@@ -34,7 +34,8 @@ const APP_TAGS = {
   optimization: { name: "优化问题", color: "#8e24aa" },
   ai: { name: "人工智能", color: "#00897b" },
   materials: { name: "材料科学", color: "#3949ab" },
-  traffic: { name: "交通物流", color: "#607d8b" }
+  traffic: { name: "交通物流", color: "#607d8b" },
+  communication: { name: "量子通信", color: "#d81b60" }
 };
 
 const TECH_TAGS = {

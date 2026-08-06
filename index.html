@@ -24,6 +24,36 @@
     <input type="text" class="search-box" id="searchBox" placeholder="🔍 搜索教授姓名、高校、研究方向、邮箱...">
     <nav class="breadcrumb" id="breadcrumb"></nav>
   </div>
+
+  <div class="controls" id="controls">
+    <div class="controls-trigger" id="controlsTrigger" title="点击或悬停展开筛选标签">
+      <span>🔍 筛选标签</span>
+      <span class="trigger-hint">▲</span>
+    </div>
+    <div class="controls-main">
+      <div class="filters">
+        <span class="filter-label">技术路线:</span>
+        <button class="filter-btn active" data-tech="all">全部</button>
+        <span id="techFiltersRow"></span>
+      </div>
+      <div class="filters" style="margin-top:6px">
+        <span class="filter-label">商业应用:</span>
+        <button class="filter-btn active" data-app="all">全部</button>
+        <span id="appFiltersRow"></span>
+      </div>
+      <div class="filters" style="margin-top:6px">
+        <span class="filter-label">院校层次:</span>
+        <button class="filter-btn active" data-tier="all">全部</button>
+        <button class="filter-btn" data-tier="985">985/C9</button>
+        <button class="filter-btn" data-tier="211">211</button>
+        <button class="filter-btn" data-tier="cas">中科院</button>
+        <button class="filter-btn" data-tier="normal">普通本科</button>
+        <span style="width:12px;display:inline-block"></span>
+        <span class="filter-label">特色:</span>
+        <button class="filter-btn ent-btn" data-tech="enterprise">🏢 有企业</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="update-bar" id="updateBar">
@@ -38,30 +68,6 @@
     <button class="update-btn" id="refreshBtn" onclick="window.location.reload()">↻ 刷新页面</button>
   </div>
   <div class="update-status" id="updateStatus"></div>
-</div>
-
-<div class="controls">
-<div class="filters">
-<span class="filter-label">技术路线:</span>
-<button class="filter-btn active" data-tech="all">全部</button>
-<span id="techFiltersRow"></span>
-</div>
-<div class="filters" style="margin-top:6px">
-<span class="filter-label">商业应用:</span>
-<button class="filter-btn active" data-app="all">全部</button>
-<span id="appFiltersRow"></span>
-</div>
-<div class="filters" style="margin-top:6px">
-<span class="filter-label">院校层次:</span>
-<button class="filter-btn active" data-tier="all">全部</button>
-<button class="filter-btn" data-tier="985">985/C9</button>
-<button class="filter-btn" data-tier="211">211</button>
-<button class="filter-btn" data-tier="cas">中科院</button>
-<button class="filter-btn" data-tier="normal">普通本科</button>
-<span style="width:12px;display:inline-block"></span>
-<span class="filter-label">特色:</span>
-<button class="filter-btn ent-btn" data-tech="enterprise">🏢 有企业</button>
-</div>
 </div>
 
 <div class="stats" id="stats"></div>

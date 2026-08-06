@@ -455,16 +455,19 @@ function setupSearch() {
   });
 }
 
-// ===== 顶部标题栏滚动折叠 =====
+// ===== 顶部区域滚动折叠（标题栏+筛选标签栏折叠，搜索框和面包屑始终保留） =====
 function setupHeaderCollapse() {
   const header = document.getElementById('header');
-  const trigger = document.getElementById('headerTrigger');
-  if (!header) return;
+  const controls = document.getElementById('controls');
+  const headerTrigger = document.getElementById('headerTrigger');
+  const controlsTrigger = document.getElementById('controlsTrigger');
+  if (!header || !controls) return;
 
   let collapsed = false;
   const setCollapsed = (c) => {
     collapsed = c;
     header.classList.toggle('collapsed', c);
+    controls.classList.toggle('collapsed', c);
   };
 
   window.addEventListener('scroll', () => {
@@ -472,8 +475,11 @@ function setupHeaderCollapse() {
     setCollapsed(y > 100);
   }, { passive: true });
 
-  if (trigger) {
-    trigger.addEventListener('click', () => setCollapsed(!collapsed));
+  if (headerTrigger) {
+    headerTrigger.addEventListener('click', () => setCollapsed(!collapsed));
+  }
+  if (controlsTrigger) {
+    controlsTrigger.addEventListener('click', () => setCollapsed(!collapsed));
   }
 }
 

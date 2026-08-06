@@ -34,13 +34,22 @@ python3 -m http.server 8080
 # 浏览器访问 http://localhost:8080
 ```
 
-## 部署到 GitHub Pages
+## 在线访问
+
+- **GitHub Pages 地址**：https://xiaoxi0512.github.io/quantum-profs/
+- 仓库：https://github.com/xiaoxi0512/quantum-profs
+
+## 部署到 GitHub Pages（已部署）
+
+本项目已部署到 GitHub Pages（main 分支 / 根目录）。如需重新部署或迁移：
 
 1. 将本项目推送到 GitHub 仓库（例如 `quantum-profs`）。
 2. 仓库 Settings → Pages → Source 选择 **main** 分支、**/ (root)** 目录 → Save。
 3. 几分钟后访问 `https://<你的用户名>.github.io/quantum-profs/`。
 
 > 注意：自动更新检查依赖前端定时 `fetch` `version.json`，GitHub Pages 原生支持静态文件服务，可直接生效。
+
+> ⚠️ 同步说明：每日 08:00 的 WorkBuddy 自动更新任务目前只更新**本地** `quantum-profs/` 数据。要让在线站点同步最新数据，需在执行更新后把改动 `git push` 到本仓库。如需全自动，可在自动化任务末尾加入 push 步骤（需配置 git 凭证）。
 
 ## 数据说明
 

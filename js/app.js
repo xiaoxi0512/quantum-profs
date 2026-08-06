@@ -122,6 +122,79 @@ function startAutoCheck() {
   }, 30 * 60 * 1000);
 }
 
+// ===== 动态生成筛选标签栏（随 TECH_TAGS/APP_TAGS 自动扩展） =====
+function buildFilterBar() {
+  const techRow = document.getElementById('techFiltersRow');
+  const appRow = document.getElementById('appFiltersRow');
+  if (techRow) {
+    Object.keys(TECH_TAGS).forEach(key => {
+      const t = TECH_TAGS[key];
+      const b = document.createElement('button');
+      b.className = 'filter-btn tech-pill';
+      b.dataset.tech = key;
+      b.innerHTML = `<span class="dot" style="background:${t.color}"></span>${t.name}`;
+      techRow.appendChild(b);
+    });
+  }
+  if (appRow) {
+    Object.keys(APP_TAGS).forEach(key => {
+      const a = APP_TAGS[key];
+      const b = document.createElement('button');
+      b.className = 'filter-btn app-pill';
+      b.dataset.app = key;
+      b.innerHTML = `<span class="dot" style="background:${a.color}"></span>${a.name}`;
+      appRow.appendChild(b);
+    });
+  }
+}
+
+// ===== 面包屑导航 =====
+let currentProfessor = null;
+function updateBreadcrumb(prof) {
+  const bc = document.getElementById('breadcrumb');
+  if (!bc) return;
+  const parts = ['<span class="bc-home" onclick="resetAll()">🏠 主页</span>'];
+  if (currentTechFilter === 'enterprise') {
+    parts.push('<span class="bc-sep">›</span><span class="bc-item">🏢 有企业</span>');
+  } else if (currentTechFilter !== 'all') {
+    const t = TECH_TAGS[currentTechFilter];
+    if (t) parts.push('<span class="bc-sep">›</span><span class="bc-item">' + t.name + '</span>');
+  }
+  if (currentAppFilter !== 'all') {
+    const a = APP_TAGS[currentAppFilter];
+    if (a) parts.push('<span class="bc-sep">›</span><span class="bc-item">' + a.name + '</span>');
+  }
+  if (currentTierFilter !== 'all') {
+    parts.push('<span class="bc-sep">›</span><span class="bc-item">' + (TIER_NAMES[currentTierFilter] || currentTierFilter) + '</span>');
+  }
+  if (prof) {
+    parts.push('<span class="bc-sep">›</span><span class="bc-item">' + prof.uni + '</span>');
+    parts.push('<span class="bc-sep">›</span><span class="bc-cur">' + prof.name + '</span>');
+  } else {
+    parts.push('<span class="bc-sep">›</span><span class="bc-item">全部学者</span>');
+  }
+  bc.innerHTML = parts.join('');
+}
+
+// ===== 一键返回主页（重置所有筛选+收起卡片+平滑置顶） =====
+function resetAll() {
+  currentTechFilter = 'all';
+  currentAppFilter = 'all';
+  currentTierFilter = 'all';
+  searchTerm = '';
+  const sb = document.getElementById('searchBox');
+  if (sb) sb.value = '';
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    const isAll = b.dataset.tech === 'all' || b.dataset.app === 'all' || b.dataset.tier === 'all';
+    b.classList.toggle('active', !!isAll);
+  });
+  document.querySelectorAll('.prof-card.expanded').forEach(c => c.classList.remove('expanded'));
+  currentProfessor = null;
+  updateBreadcrumb(null);
+  renderProfessors();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 // ===== 渲染教授卡片 =====
 function renderCard(p) {
   // 确定卡片左边框颜色
@@ -249,7 +322,17 @@ function renderMember(m) {
 // ===== 展开/折叠卡片 =====
 function toggleCard(id) {
   const card = document.getElementById('card-' + id);
-  if (card) card.classList.toggle('expanded');
+  if (!card) return;
+  const willExpand = !card.classList.contains('expanded');
+  card.classList.toggle('expanded');
+  if (willExpand) {
+    const p = professors.find(x => x.id === id);
+    currentProfessor = p || null;
+    updateBreadcrumb(p);
+  } else {
+    currentProfessor = null;
+    updateBreadcrumb(null);
+  }
 }
 
 // ===== 主渲染函数 =====
@@ -355,6 +438,10 @@ function setupFilters() {
         document.querySelectorAll('.filter-btn[data-tier]').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
       }
+      // 切换筛选时收起已展开卡片并同步面包屑
+      document.querySelectorAll('.prof-card.expanded').forEach(c => c.classList.remove('expanded'));
+      currentProfessor = null;
+      updateBreadcrumb(null);
       renderProfessors();
     });
   });
@@ -371,8 +458,10 @@ function setupSearch() {
 // ===== 初始化 =====
 document.addEventListener('DOMContentLoaded', function() {
   initUpdateBar();
+  buildFilterBar();
   setupFilters();
   setupSearch();
   renderProfessors();
+  updateBreadcrumb(null);
   startAutoCheck();
 });

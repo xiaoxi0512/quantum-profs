@@ -32,26 +32,12 @@
 <div class="filters">
 <span class="filter-label">技术路线:</span>
 <button class="filter-btn active" data-tech="all">全部</button>
-<button class="filter-btn" data-tech="super">超导</button>
-<button class="filter-btn" data-tech="semi">半导体</button>
-<button class="filter-btn" data-tech="ion">离子阱</button>
-<button class="filter-btn" data-tech="photo">光量子</button>
-<button class="filter-btn" data-tech="atom">中性原子</button>
-<button class="filter-btn" data-tech="topo">拓扑</button>
-<button class="filter-btn" data-tech="theory">理论算法</button>
+<span id="techFilters"></span>
 </div>
 <div class="filters" style="margin-top:6px">
 <span class="filter-label">商业应用:</span>
 <button class="filter-btn active" data-app="all">全部</button>
-<button class="filter-btn" data-app="chemistry">材料化学</button>
-<button class="filter-btn" data-app="biology">生物医药</button>
-<button class="filter-btn" data-app="finance">金融科技</button>
-<button class="filter-btn" data-app="security">网络安全</button>
-<button class="filter-btn" data-app="weather">气象预测</button>
-<button class="filter-btn" data-app="encryption">信息加密</button>
-<button class="filter-btn" data-app="optimization">优化问题</button>
-<button class="filter-btn" data-app="ai">人工智能</button>
-<button class="filter-btn" data-app="materials">材料科学</button>
+<span id="appFilters"></span>
 </div>
 <div class="filters" style="margin-top:6px">
 <span class="filter-label">院校层次:</span>
@@ -66,6 +52,8 @@
 </div>
 </div>
 
+<nav class="breadcrumb" id="breadcrumb"></nav>
+
 <div class="stats" id="stats"></div>
 <div class="content" id="content"></div>
 
@@ -75,6 +63,8 @@
 <p>点击"搜索最新"按钮可实时查看该教授最新科研动态，点击"知网论文"可查看最新发表论文。</p>
 <p>本报告不保证信息的绝对准确性和时效性。如有错误请反馈，我们将及时更正。</p>
 </div>
+
+<button class="fab" id="homeFab" title="一键返回主页" onclick="resetAll()">🏠</button>
 
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>

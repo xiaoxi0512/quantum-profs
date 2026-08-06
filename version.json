@@ -1,11 +1,11 @@
 {
-  "version": "1.0.1",
+  "version": "2.0.0",
   "lastUpdated": "2026-08-06",
   "lastUpdatedTime": "2026-08-06T09:19:40+08:00",
   "nextAutoUpdate": "2026-08-07T08:00:00+08:00",
   "autoUpdateSchedule": "每日 08:00 (北京时间)",
-  "totalProfessors": 74,
-  "totalUniversities": 39,
+  "totalProfessors": 427,
+  "totalUniversities": 98,
   "updateLog": [
     {
       "date": "2026-08-05",

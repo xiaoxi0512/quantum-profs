@@ -626,74 +626,14 @@ function setupSearch() {
   });
 }
 
-// ===== 顶部区域滚动折叠（标题栏+筛选标签栏分别折叠，搜索框和面包屑始终保留） =====
-// 用 IntersectionObserver 监听页面顶部哨兵，替代 scroll 阈值判断，彻底避免滚动临界抖动/闪烁。
+// ===== 顶部区域：已停用「滚动折叠」 =====
+// 原实现用 IntersectionObserver 监听哨兵来折叠标题/筛选栏，折叠时通过改变
+// .header / .controls 的 grid 高度（auto 0fr）使吸顶容器整体变矮，从而把下方
+// 全部内容向上平移约 200px——这正是「界面自己滑动」的主因之一。
+// 现改为标题栏 + 筛选栏常驻顶部、永不在滚动时改变高度，彻底消除该自滑动。
 function setupStickyCollapse() {
-  const header = document.getElementById('header');
-  const controls = document.getElementById('controls');
-  const sentinel = document.getElementById('scrollSentinel');
-  const headerTrigger = document.getElementById('headerTrigger');
-  const controlsTrigger = document.getElementById('controlsTrigger');
-  if (!header || !controls) return;
-
-  const setBoth = (c) => {
-    header.classList.toggle('collapsed', c);
-    controls.classList.toggle('collapsed', c);
-  };
-
-  // IO 回调只在“哨兵进入/离开视口”时触发，不会因为持续滚动而反复调用。
-  const observeByIO = () => {
-    if (!sentinel || !('IntersectionObserver' in window)) return false;
-    const io = new IntersectionObserver((entries) => {
-      const isVisible = entries[0] && entries[0].isIntersecting;
-      setBoth(!isVisible); // 哨兵离开视口 = 已向下滚动 → 折叠
-    }, { threshold: 0 });
-    io.observe(sentinel);
-    return true;
-  };
-
-  // 低版本浏览器兜底：用滞回阈值的滚动监听，但保持单次状态切换。
-  const observeByScroll = () => {
-    const COLLAPSE_AT = 100;
-    const EXPAND_AT = 60;
-    let collapsed = false;
-    let ticking = false;
-
-    const onScroll = () => {
-      const y = window.scrollY || document.documentElement.scrollTop;
-      if (!collapsed && y > COLLAPSE_AT) {
-        collapsed = true;
-        setBoth(true);
-      } else if (collapsed && y < EXPAND_AT) {
-        collapsed = false;
-        setBoth(false);
-      }
-      ticking = false;
-    };
-
-    window.addEventListener('scroll', () => {
-      if (!ticking) {
-        requestAnimationFrame(onScroll);
-        ticking = true;
-      }
-    }, { passive: true });
-
-    const initY = window.scrollY || document.documentElement.scrollTop;
-    collapsed = initY > COLLAPSE_AT;
-    setBoth(collapsed);
-  };
-
-  if (!observeByIO()) {
-    observeByScroll();
-  }
-
-  // 点击 trigger 仍可单独展开/收起对应区域
-  if (headerTrigger) {
-    headerTrigger.addEventListener('click', () => header.classList.toggle('collapsed'));
-  }
-  if (controlsTrigger) {
-    controlsTrigger.addEventListener('click', () => controls.classList.toggle('collapsed'));
-  }
+  // 故意留空：不再监听滚动、不再切换 .collapsed，吸顶栏高度恒定。
+  return;
 }
 
 // ===== 初始化 =====

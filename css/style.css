@@ -87,7 +87,9 @@ body { font-family:'Microsoft YaHei','Segoe UI',sans-serif; background:#f0f2f5; 
 .content { padding:16px 20px; }
 
 /* ===== 院校分组 ===== */
-.uni-group { margin-bottom:20px; animation:groupIn .3s ease both; }
+/* 注意：不再使用 groupIn 滑入动画——每次筛选/搜索都会重建 DOM，若保留动画会导致
+   整页列表每次都从下方"自己滑入"，看起来就像界面在自动滑动。改为直接出现，稳定不跳动。 */
+.uni-group { margin-bottom:20px; }
 @keyframes groupIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
 .uni-header { display:flex; align-items:center; gap:8px; padding:8px 14px; font-weight:bold; font-size:15px; color:#1a237e; margin-bottom:10px; }
 .uni-tier { font-size:10px; padding:2px 8px; border-radius:10px; color:#fff; font-weight:normal; }
@@ -101,7 +103,9 @@ body { font-family:'Microsoft YaHei','Segoe UI',sans-serif; background:#f0f2f5; 
 .card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(380px,1fr)); gap:12px; }
 
 /* ===== 一级卡片（教授概要） ===== */
-.prof-card { background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.06); border:1px solid #e8e8e8; transition:box-shadow .2s ease, transform .2s ease, border-color .2s ease; overflow:hidden; animation:cardIn .32s ease both; }
+/* 不再使用 cardIn 滑入动画：筛选/搜索每次重建卡片都会重放动画，造成"界面自己滑动"的观感。
+   改为直接呈现，重渲染稳定不跳动。 */
+.prof-card { background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.06); border:1px solid #e8e8e8; transition:box-shadow .2s ease, transform .2s ease, border-color .2s ease; overflow:hidden; }
 @keyframes cardIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
 .prof-card:hover { box-shadow:0 6px 20px rgba(0,0,0,.14); transform:translateY(-3px); border-color:#90caf9; }
 
@@ -206,6 +210,10 @@ body { font-family:'Microsoft YaHei','Segoe UI',sans-serif; background:#f0f2f5; 
 .filter-btn { will-change:transform, background-color, border-color; }
 .prof-card { will-change:transform, box-shadow; }
 .fab { will-change:transform, box-shadow; }
+
+/* 折叠触发器（header-trigger / controls-trigger）仅用于滚动折叠展开，已停用滚动折叠，
+   故隐藏，避免无功能的占位条干扰。 */
+.header-trigger, .controls-trigger { display:none; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration:.01ms !important; animation-duration:.01ms !important; scroll-behavior:auto !important; }

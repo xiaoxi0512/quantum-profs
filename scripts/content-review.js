@@ -26,10 +26,11 @@ const DATA_PATH = path.join(root, 'js', 'data.js');
 const VERSION_PATH = path.join(root, 'version.json');
 const REPORT_PATH = path.join(root, 'CONTENT_REVIEW.md');
 
-const API_KEY = process.env.LLM_API_KEY;
-const BASE_URL = (process.env.LLM_BASE_URL || '').replace(/\/$/, '');
-const MODEL = process.env.LLM_MODEL || '';
-const SEARCH_API_KEY = process.env.TAVILY_API_KEY || process.env.SEARCH_API_KEY || '';
+// 所有密钥在读取时 trim()，消除从 GitHub Secrets 复制粘贴时带入的首尾空格/换行（常见 401 诱因）
+const API_KEY = (process.env.LLM_API_KEY || '').trim();
+const BASE_URL = (process.env.LLM_BASE_URL || '').trim().replace(/\/$/, '');
+const MODEL = (process.env.LLM_MODEL || '').trim();
+const SEARCH_API_KEY = (process.env.TAVILY_API_KEY || process.env.SEARCH_API_KEY || '').trim();
 const SEARCH_PROVIDER = (process.env.SEARCH_PROVIDER || 'tavily').toLowerCase();
 const SEARCH_MAX = Math.max(1, parseInt(process.env.SEARCH_MAX || '5', 10));
 const MOCK = process.env.LLM_MOCK === '1';
@@ -99,10 +100,9 @@ async function searchWeb(query) {
   if (SEARCH_PROVIDER === 'tavily') {
     const res = await fetch('https://api.tavily.com/search', {
       method: 'POST',
-      // 同时带 Bearer 头与 body api_key，兼容 Tavily 两种鉴权方式
+      // 按 Tavily 当前官方文档：鉴权只用 Authorization: Bearer 头（body 内的 api_key 已不再推荐）
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SEARCH_API_KEY}` },
       body: JSON.stringify({
-        api_key: SEARCH_API_KEY,
         query,
         max_results: SEARCH_MAX,
         search_depth: 'advanced',
@@ -295,9 +295,12 @@ function appendReport(reviewed, anyChange) {
     console.error('[content-review] 缺少搜索 API key（TAVILY_API_KEY），请在仓库 Secrets 中添加后重试。');
     process.exit(1);
   }
-  // 诊断：仅打印 key 前缀（不泄露完整密钥），用于确认 Tavily 那一格是否填错了 key 类型
-  const diacPrefix = (SEARCH_API_KEY || '').slice(0, 5);
-  console.error(`[diag] TAVILY_API_KEY 前缀=${diacPrefix || '(空)'} | LLM_BASE_URL=${BASE_URL || '(空)'} | LLM_MODEL=${MODEL || '(空)'}`);
+  // 诊断：仅打印 key 前缀与长度、是否含首尾空白（不泄露完整密钥），用于确认 Tavily key 类型与是否被空格/换行污染
+  const rawTav = process.env.TAVILY_API_KEY !== undefined ? process.env.TAVILY_API_KEY : process.env.SEARCH_API_KEY;
+  const tavTrim = (rawTav || '').trim();
+  const diacPrefix = tavTrim.slice(0, 5);
+  const tavHadWs = rawTav !== undefined && rawTav !== tavTrim;
+  console.error(`[diag] TAVILY_API_KEY 前缀=${diacPrefix || '(空)'} len=${tavTrim.length} 含首尾空白=${tavHadWs ? '是(已自动trim)' : '否'} | LLM_BASE_URL=${BASE_URL ? '(已设置)' : '(空)'} | LLM_MODEL=${MODEL ? '(已设置)' : '(空)'}`);
   const text = fs.readFileSync(DATA_PATH, 'utf8');
   const { lines, profLines } = loadProfessors(text);
   const idSet = selectBatch(profLines);

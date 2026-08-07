@@ -1,8 +1,8 @@
 {
   "version": "2.1.0",
-  "lastUpdated": "2026-08-06",
-  "lastUpdatedTime": "2026-08-06T14:53:28+08:00",
-  "nextAutoUpdate": "2026-08-07T08:00:00+08:00",
+  "lastUpdated": "2026-08-07",
+  "lastUpdatedTime": "2026-08-07T09:12:20+08:00",
+  "nextAutoUpdate": "2026-08-08T08:00:00+08:00",
   "autoUpdateSchedule": "每日 08:00 (北京时间)",
   "totalProfessors": 633,
   "totalUniversities": 142,
@@ -26,6 +26,10 @@
     {
       "date": "2026-08-06",
       "changes": "定向扩充：按指定方向（超导/离子阱/光量子/中性原子/半导体、量子芯片/测控/低温、量子算法/软件/纠错/OS、量子化学/组合优化/金融/电力应用）新增 206 位学者；新增标签 chip/control/cryo/algo/software/errorcorr/os/power。"
+    },
+    {
+      "date": "2026-08-07",
+      "changes": "每日自动核查（手动补跑）：例行滚动核查高风险名单及当日批次，未发现需修正的人事/联系方式变动；数据规模维持 633 位教授 / 142 所高校机构。下次更新 2026-08-08 08:00。"
     }
   ]
 }

@@ -13,3 +13,8 @@ extract2.js
 find_links.js
 fix.js
 fix_links.js
+
+# 本地脚本测试副本（未跟踪，避免误提交）
+_crtest/
+_qp_clone/
+_qp_broken_git/

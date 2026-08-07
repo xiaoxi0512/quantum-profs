@@ -1,0 +1,46 @@
+name: 每日自动更新
+
+on:
+  schedule:
+    # 每日 00:00 UTC = 北京时间 08:00
+    - cron: '0 0 * * *'
+  # 允许在 Actions 页面手动触发，便于即时验证
+  workflow_dispatch:
+
+# 赋予默认 GITHUB_TOKEN 写仓库权限（用于提交并推送时间戳更新）
+permissions:
+  contents: write
+
+jobs:
+  daily-update:
+    runs-on: ubuntu-latest
+    # 防止多实例并发推送互相覆盖
+    concurrency:
+      group: daily-update
+      cancel-in-progress: false
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 滚动更新 DATA_META 时间戳
+        run: node scripts/update-meta.js
+
+      - name: 提交并推送
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add js/data.js version.json
+          if git diff --cached --quiet; then
+            echo "无变更，跳过提交"
+          else
+            git commit -m "auto: 每日核查与更新 $(date -u +%Y-%m-%d)（GitHub Actions）"
+            git push
+          fi

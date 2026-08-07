@@ -8,3 +8,8 @@ quantum-profs-deploy/
 
 # 忽略 SSH 部署密钥（不入库，仅本地用于自动 push）
 .ssh/
+extract.js
+extract2.js
+find_links.js
+fix.js
+fix_links.js

@@ -35,7 +35,7 @@ const version = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
 // ---------- js/data.js -> DATA_META ----------
 const dataPath = path.join(root, 'js', 'data.js');
 const dataRaw = fs.readFileSync(dataPath, 'utf8');
-const metaMatch = dataRaw.match(/(const DATA_META = \{[\s\S]*?\});/);
+const metaMatch = dataRaw.match(/\bconst DATA_META = (\{[\s\S]*?\});/);
 if (!metaMatch) throw new Error('未在 js/data.js 中找到 const DATA_META 定义');
 const meta = JSON.parse(metaMatch[1]);
 

@@ -134,7 +134,7 @@ async function searchScholar(query) {
   }
   const [arxiv, crossref, s2] = await Promise.all([
     safe('arXiv', async () => {
-      const url = `http://export.arxiv.org/api/query?search_query=au:%22${encodeURIComponent(name)}%22&start=0&max_results=${SEARCH_MAX}&sortBy=submittedDate&sortOrder=descending`;
+      const url = `https://export.arxiv.org/api/query?search_query=au:%22${encodeURIComponent(name)}%22&start=0&max_results=${SEARCH_MAX}&sortBy=submittedDate&sortOrder=descending`;
       const r = await fetch(url, opts);
       if (!r.ok) return [];
       const xml = await r.text();
@@ -167,7 +167,38 @@ async function searchScholar(query) {
     }),
   ]);
   const combined = [...arxiv, ...crossref, ...s2].filter((r) => r.url && r.title);
+  console.error(`[scholar] ${name}: arXiv=${arxiv.length} Crossref=${crossref.length} S2=${s2.length} 合计=${combined.length}`);
   return combined;
+}
+
+// ---------- LLM 连通性自检（启动即跑，把真实错误暴露在最前面） ----------
+async function llmSelfCheck() {
+  if (MOCK) return;
+  console.error('[diag] 正在做 LLM 连通性自检 ...');
+  const url = `${BASE_URL}/chat/completions`;
+  const body = JSON.stringify({
+    model: MODEL, temperature: 0,
+    messages: [{ role: 'user', content: '请只回复 JSON：{"ok":true}' }],
+  });
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_KEY}` },
+      body,
+    });
+    const txt = await res.text().catch(() => '');
+    if (!res.ok) {
+      console.error(`[diag] ❌ LLM 自检失败 HTTP ${res.status}`);
+      console.error(`[diag] 响应片段：${txt.slice(0, 400)}`);
+      console.error(`[diag] 排查：LLM_BASE_URL=${BASE_URL || '(空)'}（应形如 https://api.deepseek.com/v1，含 /v1）、LLM_MODEL=${MODEL || '(空)'}、LLM_API_KEY 是否有效。`);
+      process.exit(1);
+    }
+    console.error('[diag] ✅ LLM 自检通过');
+  } catch (e) {
+    console.error(`[diag] ❌ LLM 自检异常：${e.message}`);
+    console.error(`[diag] 排查：LLM_BASE_URL=${BASE_URL || '(空)'} 是否可达？是否多写了 /chat/completions 后缀？网络是否受限？`);
+    process.exit(1);
+  }
 }
 
 // ---------- 构造核查 prompt（注入检索上下文） ----------
@@ -351,6 +382,7 @@ function appendReport(reviewed, anyChange) {
   const diacPrefix = tavTrim.slice(0, 5);
   const tavHadWs = rawTav !== undefined && rawTav !== tavTrim;
   console.error(`[diag] SEARCH_PROVIDER=${SEARCH_PROVIDER} | TAVILY_API_KEY=${diacPrefix ? `前缀=${diacPrefix} len=${tavTrim.length} 含首尾空白=${tavHadWs ? '是(已自动trim)' : '否'}` : '(未设置)'} | LLM_BASE_URL=${BASE_URL ? '(已设置)' : '(空)'} | LLM_MODEL=${MODEL ? '(已设置)' : '(空)'}`);
+  await llmSelfCheck();
   const text = fs.readFileSync(DATA_PATH, 'utf8');
   const { lines, profLines } = loadProfessors(text);
   const idSet = selectBatch(profLines);
@@ -386,7 +418,9 @@ function appendReport(reviewed, anyChange) {
   console.log(`[content-review] 审查 ${reviewed.length} 人，有变更 ${changeCount} 人，文件变更=${anyChange}`);
   const failed = reviewed.filter((r) => r.error).length;
   if (failed > 0 && failed === reviewed.length && !MOCK) {
-    console.error(`[content-review] ⚠️ 全部 ${reviewed.length} 人的联网搜索均失败（供应商=${SEARCH_PROVIDER}）。请检查网络或搜索源配置后重试。`);
+    const firstErr = reviewed.find((r) => r.error)?.error || '';
+    console.error(`[content-review] ⚠️ 全部 ${reviewed.length} 人的核查均失败。首条错误：${firstErr}`);
+    console.error(`[content-review] 提示：scholar 搜索不会抛错，因此大概率是 LLM 调用失败（密钥无效 / BASE_URL 路径错误 / 模型名错误）。请查看上方 [diag] LLM 自检结果。`);
     process.exit(1);
   }
 })();

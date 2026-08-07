@@ -295,6 +295,9 @@ function appendReport(reviewed, anyChange) {
     console.error('[content-review] 缺少搜索 API key（TAVILY_API_KEY），请在仓库 Secrets 中添加后重试。');
     process.exit(1);
   }
+  // 诊断：仅打印 key 前缀（不泄露完整密钥），用于确认 Tavily 那一格是否填错了 key 类型
+  const diacPrefix = (SEARCH_API_KEY || '').slice(0, 5);
+  console.error(`[diag] TAVILY_API_KEY 前缀=${diacPrefix || '(空)'} | LLM_BASE_URL=${BASE_URL || '(空)'} | LLM_MODEL=${MODEL || '(空)'}`);
   const text = fs.readFileSync(DATA_PATH, 'utf8');
   const { lines, profLines } = loadProfessors(text);
   const idSet = selectBatch(profLines);

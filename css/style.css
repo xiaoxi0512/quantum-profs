@@ -211,9 +211,33 @@ body { font-family:'Microsoft YaHei','Segoe UI',sans-serif; background:#f0f2f5; 
 .prof-card { will-change:transform, box-shadow; }
 .fab { will-change:transform, box-shadow; }
 
-/* 折叠触发器（header-trigger / controls-trigger）仅用于滚动折叠展开，已停用滚动折叠，
-   故隐藏，避免无功能的占位条干扰。 */
-.header-trigger, .controls-trigger { display:none; }
+/* ===== 折叠触发条：常驻可见，仅支持"点击手动折叠/展开" =====
+   说明：已彻底停用"随滚动自动折叠"（那会让吸顶栏高度突变、下方内容整体上移，
+   观感就是页面自己在滑动）。这里让触发条在展开/折叠两种状态都可见并可点击，
+   折叠权交还给用户主动操作。 */
+.header-trigger, .controls-trigger { display:flex; opacity:1; overflow:hidden; }
+.header-trigger  { max-height:120px; padding:4px 20px; }
+.controls-trigger{ max-height:160px; padding:4px 20px; }
+.header.collapsed .header-trigger    { max-height:120px; padding:6px 20px; }
+.controls.collapsed .controls-trigger{ max-height:160px; padding:5px 20px; }
+
+/* 展开态：隐藏原文字（与下方内容重复），改用"收起…"提示，让折叠入口一眼可见；
+   折叠态：显示原文字，方便知道被收起的是什么。 */
+.header-trigger  > span:not(.trigger-hint),
+.controls-trigger> span:not(.trigger-hint) { display:none; }
+.header.collapsed .header-trigger    > span:not(.trigger-hint),
+.controls.collapsed .controls-trigger> span:not(.trigger-hint) { display:inline; }
+.header-trigger::before   { content:'收起标题'; font-size:12px; font-weight:normal; opacity:.9; }
+.controls-trigger::before { content:'收起筛选标签'; font-size:12px; font-weight:normal; opacity:.9; }
+.header.collapsed .header-trigger::before,
+.controls.collapsed .controls-trigger::before { content:none; }
+
+/* 折叠态箭头翻转（▲收起 → ▼展开） */
+.header.collapsed .header-trigger .trigger-hint,
+.controls.collapsed .controls-trigger .trigger-hint { transform:rotate(180deg); }
+
+.header-trigger:hover   { background:rgba(255,255,255,.12); }
+.controls-trigger:hover { background:#e8eaf6; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration:.01ms !important; animation-duration:.01ms !important; scroll-behavior:auto !important; }

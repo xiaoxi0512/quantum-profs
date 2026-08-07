@@ -634,8 +634,39 @@ function setupSearch() {
 // 全部内容向上平移约 200px——这正是「界面自己滑动」的主因之一。
 // 现改为标题栏 + 筛选栏常驻顶部、永不在滚动时改变高度，彻底消除该自滑动。
 function setupStickyCollapse() {
-  // 故意留空：不再监听滚动、不再切换 .collapsed，吸顶栏高度恒定。
-  return;
+  const header = document.getElementById('header');
+  const controls = document.getElementById('controls');
+  const headerTrigger = document.getElementById('headerTrigger');
+  const controlsTrigger = document.getElementById('controlsTrigger');
+  if (!header || !controls) return;
+
+  // 关键：只支持"点击手动折叠/展开"。
+  // 绝不监听 scroll、绝不使用 IntersectionObserver —— 一旦随滚动自动改变吸顶栏高度，
+  // 下方内容会整体平移，观感就是"页面自己在滑动"（此前的 bug 根源之一）。
+  const KEY_H = 'qp_header_collapsed';
+  const KEY_C = 'qp_controls_collapsed';
+
+  const readPref = (k) => {
+    try { return localStorage.getItem(k) === '1'; } catch (e) { return false; }
+  };
+  const writePref = (k, v) => {
+    try { localStorage.setItem(k, v ? '1' : '0'); } catch (e) { /* 隐私模式忽略 */ }
+  };
+
+  const bind = (el, trigger, key, labelOn, labelOff) => {
+    if (!trigger) return;
+    // 恢复上次的折叠偏好
+    if (readPref(key)) el.classList.add('collapsed');
+    trigger.title = el.classList.contains('collapsed') ? labelOff : labelOn;
+    trigger.addEventListener('click', () => {
+      const collapsed = el.classList.toggle('collapsed');
+      trigger.title = collapsed ? labelOff : labelOn;
+      writePref(key, collapsed);
+    });
+  };
+
+  bind(header, headerTrigger, KEY_H, '点击收起标题', '点击展开标题');
+  bind(controls, controlsTrigger, KEY_C, '点击收起筛选标签', '点击展开筛选标签');
 }
 
 // ===== 初始化 =====

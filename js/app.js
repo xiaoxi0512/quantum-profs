@@ -475,16 +475,43 @@ function setupStickyCollapse() {
   const controlsTrigger = document.getElementById('controlsTrigger');
   if (!header || !controls) return;
 
-  const setCollapsed = (c) => {
+  // 双阈值滞回：避免在临界位置反复折叠/展开导致闪烁
+  const COLLAPSE_AT = 100;
+  const EXPAND_AT = 60;
+
+  let scrollCollapsed = false;
+  let ticking = false;
+
+  const setBoth = (c) => {
     header.classList.toggle('collapsed', c);
     controls.classList.toggle('collapsed', c);
   };
 
-  window.addEventListener('scroll', () => {
+  const onScroll = () => {
     const y = window.scrollY || document.documentElement.scrollTop;
-    setCollapsed(y > 80);
+    if (!scrollCollapsed && y > COLLAPSE_AT) {
+      scrollCollapsed = true;
+      setBoth(true);
+    } else if (scrollCollapsed && y < EXPAND_AT) {
+      scrollCollapsed = false;
+      setBoth(false);
+    }
+    ticking = false;
+  };
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(onScroll);
+      ticking = true;
+    }
   }, { passive: true });
 
+  // 页面加载时根据当前滚动位置初始化一次，避免刷新后状态不一致
+  const initY = window.scrollY || document.documentElement.scrollTop;
+  scrollCollapsed = initY > COLLAPSE_AT;
+  setBoth(scrollCollapsed);
+
+  // 点击 trigger 仍可单独展开/收起对应区域
   if (headerTrigger) {
     headerTrigger.addEventListener('click', () => header.classList.toggle('collapsed'));
   }

@@ -33,9 +33,12 @@ jobs:
 
       - name: 联网核查并更新教授数据
         env:
+          # 必填：LLM（用于「判断」）
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          # 可选：默认 scholar（arXiv+Crossref+Semantic Scholar 免密钥学术检索）；
+          # 若想改用 Tavily 联网检索，设 SEARCH_PROVIDER=tavily 并填 TAVILY_API_KEY
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           SEARCH_PROVIDER: ${{ secrets.SEARCH_PROVIDER }}
           SEARCH_MAX: ${{ secrets.SEARCH_MAX }}

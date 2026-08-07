@@ -3,17 +3,19 @@
  * 内容自动审查与更新（由 GitHub Actions 定时调用）—— 方案 B：独立搜索 API + 任意 LLM
  *
  * 设计：
- *   1. 用独立的「联网搜索 API」（默认 Tavily）检索教授的最新公开信息（真联网，不依赖 LLM 是否自带搜索）
+ *   1. 用独立的「联网搜索」检索教授的最新公开信息（真联网，不依赖 LLM 是否自带搜索）
+ *      - 默认 SEARCH_PROVIDER=scholar：arXiv + Crossref + Semantic Scholar 三个免密钥学术接口并行检索
+ *      - SEARCH_PROVIDER=tavily：需配置 TAVILY_API_KEY（可选，作为补充检索源）
  *   2. 把检索结果作为「已知上下文」交给任意 OpenAI 兼容 LLM 做判断与结构化抽取
  *   3. 仅以保守规则改写数据：职称变动、bio/achievements 追加、邮箱/电话仅在原为空时补全、office 更新
  *   4. 绝不删除记录、绝不猜测；所有不确定项与检索来源写入 CONTENT_REVIEW.md 供人工复核
  *
  * 环境变量：
  *   LLM_API_KEY    必填（仓库 Secrets）：用于「判断」的 LLM key
- *   LLM_BASE_URL   必填（仓库 Secrets）：LLM 的 OpenAI 兼容接口地址，如 https://api.openai.com/v1
- *   LLM_MODEL      必填（仓库 Secrets）：模型名，如 gpt-4o / deepseek-chat
- *   TAVILY_API_KEY 必填（仓库 Secrets）：Tavily 搜索 API key（真联网检索）
- *   SEARCH_PROVIDER 可选，默认 tavily
+ *   LLM_BASE_URL   必填（仓库 Secrets）：LLM 的 OpenAI 兼容接口地址，如 https://api.deepseek.com/v1
+ *   LLM_MODEL      必填（仓库 Secrets）：模型名，如 deepseek-chat
+ *   SEARCH_PROVIDER 可选，默认 scholar（免密钥学术检索）；可设 tavily（需 TAVILY_API_KEY）
+ *   TAVILY_API_KEY 可选（仅当 SEARCH_PROVIDER=tavily 时必填）
  *   SEARCH_MAX     可选，单次检索返回条数，默认 5
  *   MAX_REVIEWS    可选，单次最多审查人数，默认 25
  *   LLM_MOCK=1     本地测试：不联网，返回假数据验证改写链路
@@ -31,7 +33,7 @@ const API_KEY = (process.env.LLM_API_KEY || '').trim();
 const BASE_URL = (process.env.LLM_BASE_URL || '').trim().replace(/\/$/, '');
 const MODEL = (process.env.LLM_MODEL || '').trim();
 const SEARCH_API_KEY = (process.env.TAVILY_API_KEY || process.env.SEARCH_API_KEY || '').trim();
-const SEARCH_PROVIDER = (process.env.SEARCH_PROVIDER || 'tavily').toLowerCase();
+const SEARCH_PROVIDER = (process.env.SEARCH_PROVIDER || 'scholar').toLowerCase();
 const SEARCH_MAX = Math.max(1, parseInt(process.env.SEARCH_MAX || '5', 10));
 const MOCK = process.env.LLM_MOCK === '1';
 const MAX_REVIEWS = Math.max(1, parseInt(process.env.MAX_REVIEWS || '25', 10));
@@ -91,13 +93,16 @@ function selectBatch(profLines) {
   return [...ids];
 }
 
-// ---------- 联网搜索（独立搜索 API；默认 Tavily） ----------
+// ---------- 联网搜索（默认 scholar 免密钥学术检索；可选 tavily） ----------
 async function searchWeb(query) {
   if (MOCK) {
     return [{ title: `Mock 搜索结果：${query}`, url: 'https://example.com/mock', content: '这是本地 mock 的检索片段，不会进入线上数据。' }];
   }
-  if (!SEARCH_API_KEY) throw new Error('缺少搜索 API key（TAVILY_API_KEY 或 SEARCH_API_KEY）');
+  if (SEARCH_PROVIDER === 'scholar') {
+    return await searchScholar(query);
+  }
   if (SEARCH_PROVIDER === 'tavily') {
+    if (!SEARCH_API_KEY) throw new Error('使用 tavily 供应商时缺少 TAVILY_API_KEY');
     const res = await fetch('https://api.tavily.com/search', {
       method: 'POST',
       // 按 Tavily 当前官方文档：鉴权只用 Authorization: Bearer 头（body 内的 api_key 已不再推荐）
@@ -116,8 +121,53 @@ async function searchWeb(query) {
     const data = await res.json();
     return (data.results || []).map((r) => ({ title: r.title, url: r.url, content: r.content || '' }));
   }
-  // 其他搜索供应商可在此扩展
   throw new Error(`不支持的 SEARCH_PROVIDER: ${SEARCH_PROVIDER}`);
+}
+
+// 免密钥学术检索：arXiv + Crossref + Semantic Scholar 并行，任一失败不影响其他
+async function searchScholar(query) {
+  // query 形如 "潘建伟 中国科学技术大学 量子计算 ..."，取首个 token 作为姓名
+  const name = (query.split(/\s+/)[0] || query).trim();
+  const opts = { headers: { 'User-Agent': 'quantum-profs-content-review/1.0 (academic verification)' } };
+  async function safe(label, fn) {
+    try { return await fn(); } catch (e) { console.error(`[scholar] ${label} 失败:`, e.message); return []; }
+  }
+  const [arxiv, crossref, s2] = await Promise.all([
+    safe('arXiv', async () => {
+      const url = `http://export.arxiv.org/api/query?search_query=au:%22${encodeURIComponent(name)}%22&start=0&max_results=${SEARCH_MAX}&sortBy=submittedDate&sortOrder=descending`;
+      const r = await fetch(url, opts);
+      if (!r.ok) return [];
+      const xml = await r.text();
+      return xml.split('<entry>').slice(1).slice(0, SEARCH_MAX).map((e) => {
+        const get = (t) => { const m = e.match(new RegExp(`<${t}[^>]*>([\\s\\S]*?)</${t}>`)); return m ? m[1].replace(/\\s+/g, ' ').trim() : ''; };
+        return { title: `arXiv: ${get('title')}`, url: get('id'), content: get('summary').slice(0, 400) };
+      });
+    }),
+    safe('Crossref', async () => {
+      const url = `https://api.crossref.org/works?query.author=${encodeURIComponent(name)}&rows=${SEARCH_MAX}&sort=published&order=desc`;
+      const r = await fetch(url, opts);
+      if (!r.ok) return [];
+      const data = await r.json();
+      return (data.message?.items || []).slice(0, SEARCH_MAX).map((it) => ({
+        title: `Crossref: ${it.title?.[0] || 'Untitled'}`,
+        url: it.DOI ? `https://doi.org/${it.DOI}` : (it.URL || ''),
+        content: (it['container-title']?.[0] || '').slice(0, 300),
+      }));
+    }),
+    safe('SemanticScholar', async () => {
+      const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(name)}&limit=${SEARCH_MAX}&fields=title,url,abstract,publicationDate`;
+      const r = await fetch(url, opts);
+      if (!r.ok) return [];
+      const data = await r.json();
+      return (data.data || []).slice(0, SEARCH_MAX).map((it) => ({
+        title: `Semantic Scholar: ${it.title || ''}`,
+        url: it.url || '',
+        content: (it.abstract || '').slice(0, 400),
+      }));
+    }),
+  ]);
+  const combined = [...arxiv, ...crossref, ...s2].filter((r) => r.url && r.title);
+  return combined;
 }
 
 // ---------- 构造核查 prompt（注入检索上下文） ----------
@@ -291,8 +341,8 @@ function appendReport(reviewed, anyChange) {
     console.error('[content-review] 缺少环境变量 LLM_API_KEY，请在仓库 Secrets 中添加后重试。');
     process.exit(1);
   }
-  if (!MOCK && !SEARCH_API_KEY) {
-    console.error('[content-review] 缺少搜索 API key（TAVILY_API_KEY），请在仓库 Secrets 中添加后重试。');
+  if (!MOCK && SEARCH_PROVIDER === 'tavily' && !SEARCH_API_KEY) {
+    console.error('[content-review] 使用 tavily 供应商但缺少 TAVILY_API_KEY，请在仓库 Secrets 中添加；或设 SEARCH_PROVIDER=scholar 免密钥检索。');
     process.exit(1);
   }
   // 诊断：仅打印 key 前缀与长度、是否含首尾空白（不泄露完整密钥），用于确认 Tavily key 类型与是否被空格/换行污染
@@ -300,7 +350,7 @@ function appendReport(reviewed, anyChange) {
   const tavTrim = (rawTav || '').trim();
   const diacPrefix = tavTrim.slice(0, 5);
   const tavHadWs = rawTav !== undefined && rawTav !== tavTrim;
-  console.error(`[diag] TAVILY_API_KEY 前缀=${diacPrefix || '(空)'} len=${tavTrim.length} 含首尾空白=${tavHadWs ? '是(已自动trim)' : '否'} | LLM_BASE_URL=${BASE_URL ? '(已设置)' : '(空)'} | LLM_MODEL=${MODEL ? '(已设置)' : '(空)'}`);
+  console.error(`[diag] SEARCH_PROVIDER=${SEARCH_PROVIDER} | TAVILY_API_KEY=${diacPrefix ? `前缀=${diacPrefix} len=${tavTrim.length} 含首尾空白=${tavHadWs ? '是(已自动trim)' : '否'}` : '(未设置)'} | LLM_BASE_URL=${BASE_URL ? '(已设置)' : '(空)'} | LLM_MODEL=${MODEL ? '(已设置)' : '(空)'}`);
   const text = fs.readFileSync(DATA_PATH, 'utf8');
   const { lines, profLines } = loadProfessors(text);
   const idSet = selectBatch(profLines);
@@ -336,7 +386,7 @@ function appendReport(reviewed, anyChange) {
   console.log(`[content-review] 审查 ${reviewed.length} 人，有变更 ${changeCount} 人，文件变更=${anyChange}`);
   const failed = reviewed.filter((r) => r.error).length;
   if (failed > 0 && failed === reviewed.length && !MOCK) {
-    console.error(`[content-review] ⚠️ 全部 ${reviewed.length} 人的联网搜索均失败，疑似 TAVILY_API_KEY 无效或 Tavily 接口鉴权方式变更。请检查密钥后重试。`);
+    console.error(`[content-review] ⚠️ 全部 ${reviewed.length} 人的联网搜索均失败（供应商=${SEARCH_PROVIDER}）。请检查网络或搜索源配置后重试。`);
     process.exit(1);
   }
 })();

@@ -99,7 +99,8 @@ async function searchWeb(query) {
   if (SEARCH_PROVIDER === 'tavily') {
     const res = await fetch('https://api.tavily.com/search', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      // 同时带 Bearer 头与 body api_key，兼容 Tavily 两种鉴权方式
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SEARCH_API_KEY}` },
       body: JSON.stringify({
         api_key: SEARCH_API_KEY,
         query,
@@ -327,4 +328,9 @@ function appendReport(reviewed, anyChange) {
   }
   appendReport(reviewed, anyChange);
   console.log(`[content-review] 审查 ${reviewed.length} 人，有变更 ${changeCount} 人，文件变更=${anyChange}`);
+  const failed = reviewed.filter((r) => r.error).length;
+  if (failed > 0 && failed === reviewed.length && !MOCK) {
+    console.error(`[content-review] ⚠️ 全部 ${reviewed.length} 人的联网搜索均失败，疑似 TAVILY_API_KEY 无效或 Tavily 接口鉴权方式变更。请检查密钥后重试。`);
+    process.exit(1);
+  }
 })();

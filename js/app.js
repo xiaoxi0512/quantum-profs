@@ -484,9 +484,11 @@ function renderProfessors() {
     filtered = filtered.filter(p => p.tech && p.tech.includes(currentTechFilter));
   }
 
-  // 特色筛选（有企业等）
+  // 特色筛选：默认主页不展示企业学者，只有点选「🏢 有企业」才展示
   if (currentFeatureFilter === 'enterprise') {
     filtered = filtered.filter(p => p.enterprise);
+  } else {
+    filtered = filtered.filter(p => !p.enterprise);
   }
 
   // 商业应用筛选

@@ -1,0 +1,53 @@
+name: 内容自动审查与更新
+
+on:
+  schedule:
+    # 每周一 01:00 UTC = 北京时间 09:00
+    - cron: '0 1 * * 1'
+  # 允许在 Actions 页面手动触发，便于即时验证
+  workflow_dispatch:
+
+# 赋予默认 GITHUB_TOKEN 写仓库权限（提交并推送核查结果与数据更新）
+permissions:
+  contents: write
+
+jobs:
+  content-review:
+    runs-on: ubuntu-latest
+    # 防止多实例并发推送互相覆盖
+    concurrency:
+      group: content-review
+      cancel-in-progress: false
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # 拉全量历史，便于 rebase 避免冲突
+          fetch-depth: 0
+
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 联网核查并更新教授数据
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          MAX_REVIEWS: ${{ secrets.MAX_REVIEWS }}
+        run: node scripts/content-review.js
+
+      - name: 提交并推送
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main || true
+          git add js/data.js version.json CONTENT_REVIEW.md
+          if git diff --cached --quiet; then
+            echo "无变更，跳过提交"
+          else
+            git commit -m "auto: 内容核查与更新 $(date -u +%Y-%m-%d)（GitHub Actions + LLM）"
+            git push
+          fi

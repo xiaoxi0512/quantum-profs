@@ -1,24 +1,26 @@
 /* ===== 全局样式 ===== */
 * { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior:smooth; }
-body { font-family:'Microsoft YaHei','Segoe UI',sans-serif; background:#f0f2f5; color:#333; line-height:1.6; }
+body { font-family:'Microsoft YaHei','Segoe UI',sans-serif; background:#f0f2f5; color:#333; line-height:1.6; position:relative; }
 
 /* ===== 顶部粘性导航容器 ===== */
 .sticky-wrap { position:sticky; top:0; z-index:1000; background:#fff; box-shadow:0 2px 12px rgba(0,0,0,.18); transition:box-shadow .3s ease; }
 
+/* 不可见哨兵：决定 header/controls 何时折叠。高度即触发阈值，避免 scroll 阈值判断导致的闪烁 */
+.scroll-sentinel { position:absolute; top:0; left:0; width:1px; height:90px; pointer-events:none; visibility:hidden; }
+
 /* ===== 顶部标题 ===== */
-.header { background:linear-gradient(135deg,#1a237e,#0d47a1,#1565c0); color:#fff; text-align:center; display:grid; grid-template-rows:auto 1fr; min-height:0; transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1); will-change:grid-template-rows; }
+.header { background:linear-gradient(135deg,#1a237e,#0d47a1,#1565c0); color:#fff; text-align:center; display:grid; grid-template-rows:auto 1fr; min-height:0; transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1); will-change:grid-template-rows; contain:layout; }
 .header h1 { font-size:22px; margin-bottom:4px; letter-spacing:1px; line-height:1.2; }
 .header .subtitle { font-size:12px; opacity:.85; line-height:1.3; }
-.header-main { opacity:1; overflow:hidden; min-height:0; transition:opacity .28s ease; }
+.header-main { opacity:1; overflow:hidden; min-height:0; transition:opacity .35s cubic-bezier(.4,0,.2,1); }
 .header-main-inner { padding:22px 20px 18px; }
-.header-trigger { opacity:0; max-height:0; overflow:hidden; transition:max-height .35s cubic-bezier(.4,0,.2,1), opacity .28s ease; display:flex; align-items:center; justify-content:center; gap:8px; min-height:0; padding:0 20px; font-size:14px; font-weight:bold; cursor:pointer; color:#fff; flex-wrap:wrap; }
-.header.collapsed .header-trigger { min-height:36px; padding:6px 20px; }
+.header-trigger { opacity:0; max-height:0; overflow:hidden; transition:max-height .35s cubic-bezier(.4,0,.2,1), opacity .35s cubic-bezier(.4,0,.2,1), padding .35s cubic-bezier(.4,0,.2,1); display:flex; align-items:center; justify-content:center; gap:8px; min-height:0; padding:0 20px; font-size:14px; font-weight:bold; cursor:pointer; color:#fff; flex-wrap:wrap; }
+.header.collapsed .header-trigger { opacity:1; max-height:120px; padding:6px 20px; }
 .header-trigger span { white-space:normal; word-break:break-word; }
 .header-trigger .trigger-hint { font-size:10px; opacity:.8; transition:transform .25s ease; flex:0 0 auto; }
 .header.collapsed { grid-template-rows:auto 0fr; }
 .header.collapsed .header-main { opacity:0; }
-.header.collapsed .header-trigger { opacity:1; max-height:120px; }
 /* 标题栏不响应悬停唤起，仅保留点击 trigger 展开 */
 
 /* ===== 固定搜索+面包屑栏 ===== */
@@ -42,20 +44,16 @@ body { font-family:'Microsoft YaHei','Segoe UI',sans-serif; background:#f0f2f5; 
 .update-status.error { color:#c62828; }
 
 /* ===== 控制栏（筛选标签，默认展开，滚动折叠） ===== */
-.controls { background:#fff; border-bottom:1px solid #e0e0e0; box-shadow:0 1px 4px rgba(0,0,0,.06); display:grid; grid-template-rows:auto 1fr; min-height:0; transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1), border-color .35s ease; will-change:grid-template-rows; }
+.controls { background:#fff; border-bottom:1px solid #e0e0e0; box-shadow:0 1px 4px rgba(0,0,0,.06); display:grid; grid-template-rows:auto 1fr; min-height:0; transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1), border-color .35s ease; will-change:grid-template-rows; contain:layout; }
 .controls.collapsed { grid-template-rows:auto 0fr; border-color:transparent; }
-.controls-main { opacity:1; overflow:hidden; min-height:0; transition:opacity .28s ease; }
+.controls-main { opacity:1; overflow:hidden; min-height:0; transition:opacity .35s cubic-bezier(.4,0,.2,1); }
 .controls-main-inner { padding:12px 20px; }
-.controls-trigger { opacity:0; max-height:0; overflow:hidden; transition:max-height .35s cubic-bezier(.4,0,.2,1), opacity .28s ease; display:flex; align-items:center; justify-content:center; gap:8px; min-height:0; padding:0 20px; font-size:13px; font-weight:bold; cursor:pointer; color:#1565c0; background:#f5f5f5; flex-wrap:wrap; }
-.controls.collapsed .controls-trigger { min-height:32px; padding:6px 20px; }
+.controls-trigger { opacity:0; max-height:0; overflow:hidden; transition:max-height .35s cubic-bezier(.4,0,.2,1), opacity .35s cubic-bezier(.4,0,.2,1), padding .35s cubic-bezier(.4,0,.2,1); display:flex; align-items:center; justify-content:center; gap:8px; min-height:0; padding:0 20px; font-size:13px; font-weight:bold; cursor:pointer; color:#1565c0; background:#f5f5f5; flex-wrap:wrap; }
+.controls.collapsed .controls-trigger { opacity:1; max-height:160px; padding:5px 20px; }
 .controls-trigger span { white-space:normal; word-break:break-word; }
 .controls-trigger .trigger-hint { font-size:10px; opacity:.8; transition:transform .25s ease; flex:0 0 auto; }
 .controls.collapsed .controls-main { opacity:0; }
-.controls.collapsed .controls-trigger { opacity:1; max-height:160px; }
-.controls.collapsed:hover { grid-template-rows:auto 1fr; border-color:#e0e0e0; }
-.controls.collapsed:hover .controls-main { opacity:1; }
-.controls.collapsed:hover .controls-trigger { opacity:0; max-height:0; }
-.controls.collapsed:hover .trigger-hint { transform:rotate(180deg); }
+/* 不再用 hover 唤起 controls，避免滚动时鼠标悬停导致反复折叠展开闪烁；仅保留点击 trigger 展开 */
 
 .filters { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:4px; }
 .filter-label { font-weight:bold; font-size:12px; color:#555; margin-right:3px; }

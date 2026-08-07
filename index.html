@@ -8,6 +8,9 @@
 </head>
 <body>
 
+<!-- 用于 IntersectionObserver 判断滚动位置的不可见哨兵，避免 scroll 事件阈值抖动导致的闪烁 -->
+<div class="scroll-sentinel" id="scrollSentinel"></div>
+
 <div class="sticky-wrap" id="stickyWrap">
   <div class="header" id="header">
     <div class="header-trigger" id="headerTrigger" title="点击展开标题">

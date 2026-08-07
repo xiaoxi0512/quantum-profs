@@ -468,48 +468,65 @@ function setupSearch() {
 }
 
 // ===== 顶部区域滚动折叠（标题栏+筛选标签栏分别折叠，搜索框和面包屑始终保留） =====
+// 用 IntersectionObserver 监听页面顶部哨兵，替代 scroll 阈值判断，彻底避免滚动临界抖动/闪烁。
 function setupStickyCollapse() {
   const header = document.getElementById('header');
   const controls = document.getElementById('controls');
+  const sentinel = document.getElementById('scrollSentinel');
   const headerTrigger = document.getElementById('headerTrigger');
   const controlsTrigger = document.getElementById('controlsTrigger');
   if (!header || !controls) return;
-
-  // 双阈值滞回：避免在临界位置反复折叠/展开导致闪烁
-  const COLLAPSE_AT = 100;
-  const EXPAND_AT = 60;
-
-  let scrollCollapsed = false;
-  let ticking = false;
 
   const setBoth = (c) => {
     header.classList.toggle('collapsed', c);
     controls.classList.toggle('collapsed', c);
   };
 
-  const onScroll = () => {
-    const y = window.scrollY || document.documentElement.scrollTop;
-    if (!scrollCollapsed && y > COLLAPSE_AT) {
-      scrollCollapsed = true;
-      setBoth(true);
-    } else if (scrollCollapsed && y < EXPAND_AT) {
-      scrollCollapsed = false;
-      setBoth(false);
-    }
-    ticking = false;
+  // IO 回调只在“哨兵进入/离开视口”时触发，不会因为持续滚动而反复调用。
+  const observeByIO = () => {
+    if (!sentinel || !('IntersectionObserver' in window)) return false;
+    const io = new IntersectionObserver((entries) => {
+      const isVisible = entries[0] && entries[0].isIntersecting;
+      setBoth(!isVisible); // 哨兵离开视口 = 已向下滚动 → 折叠
+    }, { threshold: 0 });
+    io.observe(sentinel);
+    return true;
   };
 
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(onScroll);
-      ticking = true;
-    }
-  }, { passive: true });
+  // 低版本浏览器兜底：用滞回阈值的滚动监听，但保持单次状态切换。
+  const observeByScroll = () => {
+    const COLLAPSE_AT = 100;
+    const EXPAND_AT = 60;
+    let collapsed = false;
+    let ticking = false;
 
-  // 页面加载时根据当前滚动位置初始化一次，避免刷新后状态不一致
-  const initY = window.scrollY || document.documentElement.scrollTop;
-  scrollCollapsed = initY > COLLAPSE_AT;
-  setBoth(scrollCollapsed);
+    const onScroll = () => {
+      const y = window.scrollY || document.documentElement.scrollTop;
+      if (!collapsed && y > COLLAPSE_AT) {
+        collapsed = true;
+        setBoth(true);
+      } else if (collapsed && y < EXPAND_AT) {
+        collapsed = false;
+        setBoth(false);
+      }
+      ticking = false;
+    };
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(onScroll);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    const initY = window.scrollY || document.documentElement.scrollTop;
+    collapsed = initY > COLLAPSE_AT;
+    setBoth(collapsed);
+  };
+
+  if (!observeByIO()) {
+    observeByScroll();
+  }
 
   // 点击 trigger 仍可单独展开/收起对应区域
   if (headerTrigger) {

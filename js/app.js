@@ -5,7 +5,120 @@ let currentAppFilter = 'all';
 let currentTierFilter = 'all';
 let currentFeatureFilter = '';
 let searchTerm = '';
+let currentProvinceFilter = 'all';
 let updateCheckInterval = null;
+
+// ===== 省份映射：依据高校/机构名称推导所在省份（用于「省份」筛选） =====
+// 优先精确匹配（高校名不含省份/城市关键字），否则按关键字（城市/区域）判定。
+const PROVINCE_EXACT = {
+  '清华大学': '北京',
+  '百度研究院量子计算研究所': '北京',
+  '玻色量子': '北京',
+  '华翊量子': '北京',
+  '首都师范大学': '北京',
+  '国家纳米科学中心': '北京',
+  '中关村实验室': '北京',
+  '中国科学院半导体研究所': '北京',
+  '中国科学院计算技术研究所': '北京',
+  '中国科学院空天信息创新研究院': '北京',
+  '中国科学院理化技术研究所': '北京',
+  '中国科学院理论物理研究所': '北京',
+  '中国科学院软件研究所': '北京',
+  '中国科学院数学与系统科学研究院': '北京',
+  '中国科学院物理研究所': '北京',
+  '中国科学院自动化研究所': '北京',
+  '中国人民大学': '北京',
+  '中国信息通信研究院': '北京',
+  '中国移动通信研究院': '北京',
+  '中国长城研究院': '北京',
+  '中科院物理所': '北京',
+  '复旦大学': '上海',
+  '同济大学': '上海',
+  '华东师范大学': '上海',
+  '建信金融科技有限责任公司': '上海',
+  '图灵量子': '上海',
+  '中国银联金融科技研究院': '上海',
+  '南开大学': '天津',
+  '本源量子': '安徽',
+  '国盾量子': '安徽',
+  '国仪量子': '安徽',
+  '弧光量子': '安徽',
+  '科大国盾量子技术股份有限公司': '安徽',
+  '中国科学技术大学': '安徽',
+  '东南大学': '江苏',
+  '国家并行计算机工程技术研究中心': '江苏',
+  '中国移动云能力中心': '江苏',
+  '之江实验室': '浙江',
+  '华中科技大学': '湖北',
+  '中国科学院精密测量科学与技术创新研究院': '湖北',
+  '中科酷原': '湖北',
+  '中科酷原科技（武汉）有限公司': '湖北',
+  '中南大学': '湖南',
+  '国防科技大学': '湖南',
+  '中山大学': '广东',
+  '华南理工大学': '广东',
+  '华南师范大学': '广东',
+  '暨南大学': '广东',
+  '南方科技大学': '广东',
+  '腾讯量子实验室': '广东',
+  '鹏城实验室': '广东',
+  '电子科技大学': '四川',
+  '西南交通大学': '四川',
+  '西北大学': '陕西',
+  '西北工业大学': '陕西',
+  '东北大学': '辽宁'
+};
+
+// 关键字匹配顺序很重要：广东/广州/深圳 必须排在 香港/合肥 之前，
+// 否则「香港科技大学(广州)」「哈尔滨工业大学(深圳)」会被错判。
+const PROVINCE_KW = [
+  ['澳门', '澳门'],
+  ['台湾', '台湾'],
+  ['广东', '广东'], ['广州', '广东'], ['深圳', '广东'], ['珠海', '广东'], ['东莞', '广东'], ['佛山', '广东'], ['中山', '广东'], ['鹏城', '广东'],
+  ['香港', '香港'],
+  ['北京', '北京'],
+  ['上海', '上海'],
+  ['天津', '天津'],
+  ['重庆', '重庆'],
+  ['新疆', '新疆'],
+  ['内蒙古', '内蒙古'],
+  ['黑龙江', '黑龙江'], ['哈尔滨', '黑龙江'],
+  ['吉林', '吉林'], ['长春', '吉林'],
+  ['辽宁', '辽宁'], ['大连', '辽宁'], ['沈阳', '辽宁'],
+  ['河北', '河北'],
+  ['山西', '山西'], ['太原', '山西'],
+  ['山东', '山东'], ['济南', '山东'], ['青岛', '山东'],
+  ['河南', '河南'], ['郑州', '河南'],
+  ['陕西', '陕西'], ['西安', '陕西'],
+  ['甘肃', '甘肃'], ['兰州', '甘肃'],
+  ['宁夏', '宁夏'],
+  ['青海', '青海'],
+  ['西藏', '西藏'],
+  ['云南', '云南'], ['昆明', '云南'],
+  ['贵州', '贵州'],
+  ['四川', '四川'], ['成都', '四川'],
+  ['湖北', '湖北'], ['武汉', '湖北'],
+  ['湖南', '湖南'], ['长沙', '湖南'], ['湘潭', '湖南'],
+  ['江西', '江西'],
+  ['安徽', '安徽'], ['合肥', '安徽'],
+  ['江苏', '江苏'], ['南京', '江苏'], ['苏州', '江苏'], ['无锡', '江苏'], ['常州', '江苏'],
+  ['浙江', '浙江'], ['杭州', '浙江'], ['宁波', '浙江'],
+  ['福建', '福建'], ['福州', '福建'], ['厦门', '福建'], ['莆田', '福建'], ['泉州', '福建'],
+  ['广西', '广西'], ['南宁', '广西'], ['桂林', '广西'],
+  ['海南', '海南'], ['海口', '海南']
+];
+
+// 筛选栏里省份的展示顺序（仅显示数据中实际存在的省份）
+const PROVINCE_ORDER = ['北京', '上海', '天津', '重庆', '广东', '江苏', '浙江', '安徽', '福建', '山东', '山西', '河南', '湖北', '湖南', '四川', '陕西', '辽宁', '吉林', '黑龙江', '河北', '江西', '云南', '贵州', '甘肃', '海南', '内蒙古', '新疆', '广西', '青海', '宁夏', '西藏', '香港', '澳门', '台湾'];
+
+function getProvince(uni) {
+  if (!uni) return '未知';
+  if (PROVINCE_EXACT[uni]) return PROVINCE_EXACT[uni];
+  for (let i = 0; i < PROVINCE_KW.length; i++) {
+    if (uni.indexOf(PROVINCE_KW[i][0]) !== -1) return PROVINCE_KW[i][1];
+  }
+  return '未知';
+}
 
 // ===== 初始化更新状态栏 =====
 function initUpdateBar() {
@@ -127,6 +240,7 @@ function startAutoCheck() {
 function buildFilterBar() {
   const techRow = document.getElementById('techFiltersRow');
   const appRow = document.getElementById('appFiltersRow');
+  const provRow = document.getElementById('provinceFiltersRow');
   if (techRow) {
     Object.keys(TECH_TAGS).forEach(key => {
       const t = TECH_TAGS[key];
@@ -145,6 +259,18 @@ function buildFilterBar() {
       b.dataset.app = key;
       b.innerHTML = `<span class="dot" style="background:${a.color}"></span>${a.name}`;
       appRow.appendChild(b);
+    });
+  }
+  if (provRow && typeof professors !== 'undefined') {
+    // 仅展示数据中实际存在的省份，按固定顺序排序
+    const present = [...new Set(professors.map(p => getProvince(p.uni)))].filter(p => p !== '未知');
+    const ordered = PROVINCE_ORDER.filter(p => present.includes(p));
+    ordered.forEach(prov => {
+      const b = document.createElement('button');
+      b.className = 'filter-btn prov-pill';
+      b.dataset.province = prov;
+      b.innerHTML = `<span class="dot" style="background:#7e57c2"></span>${prov}`;
+      provRow.appendChild(b);
     });
   }
 }
@@ -168,6 +294,9 @@ function updateBreadcrumb(prof) {
   if (currentTierFilter !== 'all') {
     parts.push('<span class="bc-sep">›</span><span class="bc-item">' + (TIER_NAMES[currentTierFilter] || currentTierFilter) + '</span>');
   }
+  if (currentProvinceFilter !== 'all') {
+    parts.push('<span class="bc-sep">›</span><span class="bc-item">' + currentProvinceFilter + '</span>');
+  }
   if (prof) {
     parts.push('<span class="bc-sep">›</span><span class="bc-item">' + prof.uni + '</span>');
     parts.push('<span class="bc-sep">›</span><span class="bc-cur">' + prof.name + '</span>');
@@ -182,12 +311,13 @@ function resetAll() {
   currentTechFilter = 'all';
   currentAppFilter = 'all';
   currentTierFilter = 'all';
+  currentProvinceFilter = 'all';
   currentFeatureFilter = '';
   searchTerm = '';
   const sb = document.getElementById('searchBox');
   if (sb) sb.value = '';
   document.querySelectorAll('.filter-btn').forEach(b => {
-    const isAll = b.dataset.tech === 'all' || b.dataset.app === 'all' || b.dataset.tier === 'all';
+    const isAll = b.dataset.tech === 'all' || b.dataset.app === 'all' || b.dataset.tier === 'all' || b.dataset.province === 'all';
     b.classList.toggle('active', !!isAll);
   });
   document.querySelectorAll('.prof-card.expanded').forEach(c => c.classList.remove('expanded'));
@@ -362,6 +492,11 @@ function renderProfessors() {
     filtered = filtered.filter(p => p.tier === currentTierFilter);
   }
 
+  // 省份筛选（依据高校名称推导）
+  if (currentProvinceFilter !== 'all') {
+    filtered = filtered.filter(p => getProvince(p.uni) === currentProvinceFilter);
+  }
+
   // 搜索筛选
   if (searchTerm) {
     const term = searchTerm.toLowerCase();
@@ -381,6 +516,7 @@ function renderProfessors() {
   let statsText = `共 <strong>${filtered.length}</strong> 位教授 | <strong>${uniCount}</strong> 所高校/机构`;
   if (currentFeatureFilter === 'enterprise') statsText += ' | 🏢 已筛选有企业的教授';
   if (currentAppFilter !== 'all') statsText += ` | 已筛选应用领域: ${(APP_TAGS[currentAppFilter] || { name: currentAppFilter }).name}`;
+  if (currentProvinceFilter !== 'all') statsText += ` | 已筛选省份: ${currentProvinceFilter}`;
   document.getElementById('stats').innerHTML = statsText;
 
   if (filtered.length === 0) {
@@ -430,6 +566,7 @@ function setupFilters() {
       const app = this.dataset.app;
       const tier = this.dataset.tier;
       const feature = this.dataset.feature;
+      const province = this.dataset.province;
 
       if (tech !== undefined) {
         currentTechFilter = tech;
@@ -442,6 +579,10 @@ function setupFilters() {
       } else if (tier !== undefined) {
         currentTierFilter = tier;
         document.querySelectorAll('.filter-btn[data-tier]').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      } else if (province !== undefined) {
+        currentProvinceFilter = province;
+        document.querySelectorAll('.filter-btn[data-province]').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
       } else if (feature !== undefined) {
         // 特色筛选（有企业等）独立于技术路线，不影响技术路线“全部”的选中状态

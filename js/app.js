@@ -120,6 +120,13 @@ function getProvince(uni) {
   return '未知';
 }
 
+// 统一企业名的半角/全角括号，避免同一公司因标点差异被拆成两个分组
+function normalizeGroupKey(name) {
+  return name.replace(/\(/g, '（').replace(/\)/g, '）')
+             .replace(/\[/g, '［').replace(/\]/g, '］')
+             .replace(/\{/g, '｛').replace(/\}/g, '｝');
+}
+
 // ===== 初始化更新状态栏 =====
 function initUpdateBar() {
   if (typeof DATA_META === 'undefined') return;
@@ -524,34 +531,44 @@ function renderProfessors() {
     return;
   }
 
-  // 按院校分组
-  const uniGroups = {};
+  // 按院校/企业分组：企业学者统一按 enterprise.name 聚合，非企业学者按 uni 聚合
+  const groups = {};
   filtered.forEach(p => {
-    if (!uniGroups[p.uni]) uniGroups[p.uni] = [];
-    uniGroups[p.uni].push(p);
+    if (p.enterprise) {
+      const key = normalizeGroupKey(p.enterprise.name);
+      if (!groups[key]) groups[key] = { key, isEnterprise: true, tier: 'enterprise', profs: [] };
+      groups[key].profs.push(p);
+    } else {
+      const key = p.uni;
+      if (!groups[key]) groups[key] = { key, isEnterprise: false, tier: p.tier, profs: [] };
+      groups[key].profs.push(p);
+    }
   });
 
-  // 按院校层次从高到低排序: 985 → 211 → 中科院 → 普通本科
-  const sortedUnis = Object.keys(uniGroups).sort((a, b) => {
-    const ta = TIER_ORDER[uniGroups[a][0].tier] !== undefined ? TIER_ORDER[uniGroups[a][0].tier] : 9;
-    const tb = TIER_ORDER[uniGroups[b][0].tier] !== undefined ? TIER_ORDER[uniGroups[b][0].tier] : 9;
-    return ta - tb || a.localeCompare(b);
+  // 排序：企业分组置顶，其余按院校层次 985 → 211 → 中科院 → 普通本科
+  const GROUP_TIER_ORDER = { enterprise: -1, 985: 0, 211: 1, cas: 2, normal: 3 };
+  const sortedGroups = Object.values(groups).sort((a, b) => {
+    const ta = GROUP_TIER_ORDER[a.tier] !== undefined ? GROUP_TIER_ORDER[a.tier] : 9;
+    const tb = GROUP_TIER_ORDER[b.tier] !== undefined ? GROUP_TIER_ORDER[b.tier] : 9;
+    return ta - tb || a.key.localeCompare(b.key, 'zh');
   });
 
   // 渲染
-  content.innerHTML = sortedUnis.map(uni => {
-    const profs = uniGroups[uni];
-    const tier = profs[0].tier;
+  content.innerHTML = sortedGroups.map(g => {
+    const badge = g.isEnterprise
+      ? '<span class="uni-tier tier-enterprise">🏢 企业</span>'
+      : `<span class="uni-tier tier-${g.tier}">${TIER_NAMES[g.tier] || g.tier}</span>`;
+    const icon = g.isEnterprise ? '🏢' : '🏫';
     return `
       <div class="uni-group">
         <div class="uni-header">
-          <span>🏫</span>
-          <span>${uni}</span>
-          <span class="uni-tier tier-${tier}">${TIER_NAMES[tier]}</span>
-          <span style="font-size:12px;color:#999;font-weight:normal;margin-left:auto">${profs.length}位教授</span>
+          <span>${icon}</span>
+          <span>${g.key}</span>
+          ${badge}
+          <span style="font-size:12px;color:#999;font-weight:normal;margin-left:auto">${g.profs.length}位教授</span>
         </div>
         <div class="card-grid">
-          ${profs.map(p => renderCard(p)).join('')}
+          ${g.profs.map(p => renderCard(p)).join('')}
         </div>
       </div>
     `;

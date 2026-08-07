@@ -313,7 +313,7 @@ function updateBreadcrumb(prof) {
   bc.innerHTML = parts.join('');
 }
 
-// ===== 一键返回主页（重置所有筛选+收起卡片+平滑置顶） =====
+// ===== 一键返回主页（重置所有筛选+收起卡片，保留当前滚动位置） =====
 function resetAll() {
   currentTechFilter = 'all';
   currentAppFilter = 'all';
@@ -331,7 +331,6 @@ function resetAll() {
   currentProfessor = null;
   updateBreadcrumb(null);
   renderProfessors();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ===== 渲染教授卡片 =====

@@ -313,7 +313,7 @@ function updateBreadcrumb(prof) {
   bc.innerHTML = parts.join('');
 }
 
-// ===== 一键返回主页（重置所有筛选+收起卡片，保留当前滚动位置） =====
+// ===== 一键返回主页（重置所有筛选+收起卡片，回到页面顶部） =====
 function resetAll() {
   currentTechFilter = 'all';
   currentAppFilter = 'all';
@@ -331,6 +331,8 @@ function resetAll() {
   currentProfessor = null;
   updateBreadcrumb(null);
   renderProfessors();
+  // 回到顶部：主页按钮应返回首屏；用瞬时跳转（无 smooth），避免与"自动滑动"混淆
+  window.scrollTo(0, 0);
 }
 
 // ===== 渲染教授卡片 =====

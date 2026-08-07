@@ -211,10 +211,9 @@ body { font-family:'Microsoft YaHei','Segoe UI',sans-serif; background:#f0f2f5; 
 .prof-card { will-change:transform, box-shadow; }
 .fab { will-change:transform, box-shadow; }
 
-/* ===== 折叠触发条：常驻可见，仅支持"点击手动折叠/展开" =====
-   说明：已彻底停用"随滚动自动折叠"（那会让吸顶栏高度突变、下方内容整体上移，
-   观感就是页面自己在滑动）。这里让触发条在展开/折叠两种状态都可见并可点击，
-   折叠权交还给用户主动操作。 */
+/* ===== 折叠触发条：常驻可见，支持"滚动自动折叠 + 悬停唤醒 + 点击切换" =====
+   说明：触发条常驻可见，因此吸顶栏折叠后仍保留约 28-34px 的占位高度，
+   下方内容只会小幅上移，不会像之前那样"整体平移 200px"导致明显滑动感。 */
 .header-trigger, .controls-trigger { display:flex; opacity:1; overflow:hidden; }
 .header-trigger  { max-height:120px; padding:4px 20px; }
 .controls-trigger{ max-height:160px; padding:4px 20px; }
@@ -235,6 +234,16 @@ body { font-family:'Microsoft YaHei','Segoe UI',sans-serif; background:#f0f2f5; 
 /* 折叠态箭头翻转（▲收起 → ▼展开） */
 .header.collapsed .header-trigger .trigger-hint,
 .controls.collapsed .controls-trigger .trigger-hint { transform:rotate(180deg); }
+
+/* ===== 悬停唤醒：折叠态鼠标悬停时临时展开 =====
+   用 JS 显式添加 .hover-peek 类（mouseenter/mouseleave）而非纯 CSS :hover，
+   便于精确控制进入/离开的延迟，避免滚动时鼠标恰好掠过导致的反复展开收起闪烁。 */
+.header.collapsed.hover-peek   { grid-template-rows:auto 1fr; }
+.controls.collapsed.hover-peek { grid-template-rows:auto 1fr; border-color:#e0e0e0; }
+.header.collapsed.hover-peek .header-main,
+.controls.collapsed.hover-peek .controls-main { opacity:1; }
+.header.collapsed.hover-peek .header-trigger,
+.controls.collapsed.hover-peek .controls-trigger { opacity:0; max-height:0; padding:0 20px; }
 
 .header-trigger:hover   { background:rgba(255,255,255,.12); }
 .controls-trigger:hover { background:#e8eaf6; }

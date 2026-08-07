@@ -628,11 +628,17 @@ function setupSearch() {
   });
 }
 
-// ===== 顶部区域：已停用「滚动折叠」 =====
-// 原实现用 IntersectionObserver 监听哨兵来折叠标题/筛选栏，折叠时通过改变
-// .header / .controls 的 grid 高度（auto 0fr）使吸顶容器整体变矮，从而把下方
-// 全部内容向上平移约 200px——这正是「界面自己滑动」的主因之一。
-// 现改为标题栏 + 筛选栏常驻顶部、永不在滚动时改变高度，彻底消除该自滑动。
+// ===== 顶部区域：滚动自动折叠 + 悬停唤醒 + 点击切换 =====
+// 设计要点（踩过的坑都写在这，别再改回去）：
+// 1) 不用 IntersectionObserver。实测 IO 的回调时机不稳定（同样滚动位置有时折叠有时不折叠、
+//    回到顶部也可能不展开），是此前"折叠时好时坏/闪烁"的根源。改用 scroll + rAF 节流，
+//    行为确定可预测。
+// 2) 滞回阈值（下滚超过 COLLAPSE_AT 才收起，回滚到 EXPAND_AT 以下才展开），
+//    避免在单一阈值附近来回抖动导致闪烁。
+// 3) 折叠态保留常驻 trigger 条（约 28px），所以下方内容只小幅上移，
+//    不会像旧方案那样整体平移 ~200px 产生"页面自己在滑动"的观感。
+// 4) 悬停唤醒用 JS 显式的 .hover-peek 类而非 CSS :hover，并带离开延迟，
+//    避免滚动时鼠标恰好掠过顶部导致反复展开/收起。
 function setupStickyCollapse() {
   const header = document.getElementById('header');
   const controls = document.getElementById('controls');
@@ -640,33 +646,82 @@ function setupStickyCollapse() {
   const controlsTrigger = document.getElementById('controlsTrigger');
   if (!header || !controls) return;
 
-  // 关键：只支持"点击手动折叠/展开"。
-  // 绝不监听 scroll、绝不使用 IntersectionObserver —— 一旦随滚动自动改变吸顶栏高度，
-  // 下方内容会整体平移，观感就是"页面自己在滑动"（此前的 bug 根源之一）。
-  const KEY_H = 'qp_header_collapsed';
-  const KEY_C = 'qp_controls_collapsed';
+  const COLLAPSE_AT = 90; // 下滚超过此值 → 折叠
+  const EXPAND_AT = 40;   // 回滚到此值以下 → 展开
+  const PEEK_LEAVE_DELAY = 260; // 鼠标离开后延迟收回，避免抖动
 
-  const readPref = (k) => {
-    try { return localStorage.getItem(k) === '1'; } catch (e) { return false; }
-  };
-  const writePref = (k, v) => {
-    try { localStorage.setItem(k, v ? '1' : '0'); } catch (e) { /* 隐私模式忽略 */ }
+  let collapsed = false;
+  let manual = false; // 用户手动点过 trigger 后，暂时不让滚动逻辑覆盖其选择
+
+  const syncTitle = () => {
+    if (headerTrigger) headerTrigger.title = collapsed ? '点击展开标题' : '点击收起标题';
+    if (controlsTrigger) controlsTrigger.title = collapsed ? '点击展开筛选标签' : '点击收起筛选标签';
   };
 
-  const bind = (el, trigger, key, labelOn, labelOff) => {
-    if (!trigger) return;
-    // 恢复上次的折叠偏好
-    if (readPref(key)) el.classList.add('collapsed');
-    trigger.title = el.classList.contains('collapsed') ? labelOff : labelOn;
-    trigger.addEventListener('click', () => {
-      const collapsed = el.classList.toggle('collapsed');
-      trigger.title = collapsed ? labelOff : labelOn;
-      writePref(key, collapsed);
+  const apply = () => {
+    header.classList.toggle('collapsed', collapsed);
+    controls.classList.toggle('collapsed', collapsed);
+    if (!collapsed) {
+      // 展开时清掉悬停临时态，避免残留
+      header.classList.remove('hover-peek');
+      controls.classList.remove('hover-peek');
+    }
+    syncTitle();
+  };
+
+  const getY = () => window.scrollY || document.documentElement.scrollTop || 0;
+
+  const evaluate = () => {
+    const y = getY();
+    if (!manual) {
+      if (!collapsed && y > COLLAPSE_AT) {
+        collapsed = true;
+        apply();
+      } else if (collapsed && y < EXPAND_AT) {
+        collapsed = false;
+        apply();
+      }
+    } else if (y < EXPAND_AT) {
+      // 回到顶部时解除手动锁定，恢复自动行为
+      manual = false;
+      if (collapsed) { collapsed = false; apply(); }
+    }
+  };
+
+  // 同步执行而非 rAF 节流：evaluate 只做一次 scrollY 读取 + 数值比较，
+  // 仅在状态真正翻转时才改 DOM，开销极小；同步执行行为确定、易于验证。
+  window.addEventListener('scroll', evaluate, { passive: true });
+
+  // 初始状态按当前滚动位置确定（刷新后停在页面中部也能正确折叠）
+  collapsed = getY() > COLLAPSE_AT;
+  apply();
+
+  // ===== 悬停唤醒：折叠态下鼠标移入顶部区域 → 临时展开 =====
+  const bindPeek = (el) => {
+    let leaveTimer = null;
+    el.addEventListener('mouseenter', () => {
+      if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; }
+      if (el.classList.contains('collapsed')) el.classList.add('hover-peek');
+    });
+    el.addEventListener('mouseleave', () => {
+      if (leaveTimer) clearTimeout(leaveTimer);
+      leaveTimer = setTimeout(() => {
+        el.classList.remove('hover-peek');
+        leaveTimer = null;
+      }, PEEK_LEAVE_DELAY);
     });
   };
+  bindPeek(header);
+  bindPeek(controls);
 
-  bind(header, headerTrigger, KEY_H, '点击收起标题', '点击展开标题');
-  bind(controls, controlsTrigger, KEY_C, '点击收起筛选标签', '点击展开筛选标签');
+  // ===== 点击 trigger 手动切换（两栏联动）=====
+  const toggleManual = () => {
+    collapsed = !collapsed;
+    manual = true;
+    apply();
+  };
+  if (headerTrigger) headerTrigger.addEventListener('click', toggleManual);
+  if (controlsTrigger) controlsTrigger.addEventListener('click', toggleManual);
 }
 
 // ===== 初始化 =====

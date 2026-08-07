@@ -1,18 +1,22 @@
 #!/usr/bin/env node
 /**
- * 内容自动审查与更新（由 GitHub Actions 定时调用）
+ * 内容自动审查与更新（由 GitHub Actions 定时调用）—— 方案 B：独立搜索 API + 任意 LLM
  *
- * - 选取「高风险必查名单」+「按 id 滚动批次」的教授
- * - 调用带联网搜索能力的 LLM（OpenAI 兼容接口，默认 Perplexity sonar）核查公开信息
- * - 仅以保守规则改写数据：职称变动、bio/achievements 追加、邮箱/电话仅在原为空时补全、office 更新
- * - 绝不删除记录、绝不猜测；所有不确定项写入 CONTENT_REVIEW.md 供人工复核
+ * 设计：
+ *   1. 用独立的「联网搜索 API」（默认 Tavily）检索教授的最新公开信息（真联网，不依赖 LLM 是否自带搜索）
+ *   2. 把检索结果作为「已知上下文」交给任意 OpenAI 兼容 LLM 做判断与结构化抽取
+ *   3. 仅以保守规则改写数据：职称变动、bio/achievements 追加、邮箱/电话仅在原为空时补全、office 更新
+ *   4. 绝不删除记录、绝不猜测；所有不确定项与检索来源写入 CONTENT_REVIEW.md 供人工复核
  *
  * 环境变量：
- *   LLM_API_KEY   必填（仓库 Secrets）
- *   LLM_BASE_URL  可选，默认 https://api.perplexity.ai
- *   LLM_MODEL     可选，默认 sonar-pro
- *   MAX_REVIEWS   可选，单次最多审查人数，默认 25
- *   LLM_MOCK=1    本地测试：不联网，返回假数据验证改写链路
+ *   LLM_API_KEY    必填（仓库 Secrets）：用于「判断」的 LLM key
+ *   LLM_BASE_URL   必填（仓库 Secrets）：LLM 的 OpenAI 兼容接口地址，如 https://api.openai.com/v1
+ *   LLM_MODEL      必填（仓库 Secrets）：模型名，如 gpt-4o / deepseek-chat
+ *   TAVILY_API_KEY 必填（仓库 Secrets）：Tavily 搜索 API key（真联网检索）
+ *   SEARCH_PROVIDER 可选，默认 tavily
+ *   SEARCH_MAX     可选，单次检索返回条数，默认 5
+ *   MAX_REVIEWS    可选，单次最多审查人数，默认 25
+ *   LLM_MOCK=1     本地测试：不联网，返回假数据验证改写链路
  */
 const fs = require('fs');
 const path = require('path');
@@ -23,8 +27,11 @@ const VERSION_PATH = path.join(root, 'version.json');
 const REPORT_PATH = path.join(root, 'CONTENT_REVIEW.md');
 
 const API_KEY = process.env.LLM_API_KEY;
-const BASE_URL = (process.env.LLM_BASE_URL || 'https://api.perplexity.ai').replace(/\/$/, '');
-const MODEL = process.env.LLM_MODEL || 'sonar-pro';
+const BASE_URL = (process.env.LLM_BASE_URL || '').replace(/\/$/, '');
+const MODEL = process.env.LLM_MODEL || '';
+const SEARCH_API_KEY = process.env.TAVILY_API_KEY || process.env.SEARCH_API_KEY || '';
+const SEARCH_PROVIDER = (process.env.SEARCH_PROVIDER || 'tavily').toLowerCase();
+const SEARCH_MAX = Math.max(1, parseInt(process.env.SEARCH_MAX || '5', 10));
 const MOCK = process.env.LLM_MOCK === '1';
 const MAX_REVIEWS = Math.max(1, parseInt(process.env.MAX_REVIEWS || '25', 10));
 
@@ -83,9 +90,42 @@ function selectBatch(profLines) {
   return [...ids];
 }
 
-// ---------- 构造核查 prompt ----------
-function buildPrompt(p) {
-  return `你是一个严谨的学者信息核查助手。请使用联网搜索，核对以下中国高校量子计算领域教授的最新公开信息（以官方教师主页、学校新闻、学院公告为准）。
+// ---------- 联网搜索（独立搜索 API；默认 Tavily） ----------
+async function searchWeb(query) {
+  if (MOCK) {
+    return [{ title: `Mock 搜索结果：${query}`, url: 'https://example.com/mock', content: '这是本地 mock 的检索片段，不会进入线上数据。' }];
+  }
+  if (!SEARCH_API_KEY) throw new Error('缺少搜索 API key（TAVILY_API_KEY 或 SEARCH_API_KEY）');
+  if (SEARCH_PROVIDER === 'tavily') {
+    const res = await fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: SEARCH_API_KEY,
+        query,
+        max_results: SEARCH_MAX,
+        search_depth: 'advanced',
+        include_raw_content: false,
+      }),
+    });
+    if (!res.ok) {
+      const t = await res.text().catch(() => '');
+      throw new Error(`Tavily ${res.status}: ${t.slice(0, 200)}`);
+    }
+    const data = await res.json();
+    return (data.results || []).map((r) => ({ title: r.title, url: r.url, content: r.content || '' }));
+  }
+  // 其他搜索供应商可在此扩展
+  throw new Error(`不支持的 SEARCH_PROVIDER: ${SEARCH_PROVIDER}`);
+}
+
+// ---------- 构造核查 prompt（注入检索上下文） ----------
+function buildPrompt(p, results) {
+  const ctx = results.length
+    ? results.map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${(r.content || '').slice(0, 600)}`).join('\n\n')
+    : '（无搜索结果）';
+  return `你是一个严谨的学者信息核查助手。以下是针对该教授的最新联网搜索结果（来源已给出）。
+请仅基于这些可核实的公开来源进行判断，不要使用你自己的记忆，不要猜测。
 
 姓名：${p.name}
 院校：${p.uni}
@@ -94,7 +134,11 @@ function buildPrompt(p) {
 当前邮箱：${p.email || '（空）'}
 当前成就/奖项：${p.achievements || '（空）'}
 
-请联网检索其官方主页与近一年新闻，回答：
+=== 联网搜索结果 ===
+${ctx}
+=== 结束 ===
+
+请依据上述来源回答：
 1. 职称是否有变动（晋升/新聘）？
 2. 近一年是否有重要新成果、新奖项、新职务？
 3. 邮箱/电话/办公室是否公开变更？
@@ -104,14 +148,15 @@ function buildPrompt(p) {
   "verified": true,
   "confidence": "high|medium|low",
   "title": "<若职称变动请给出新职称，否则 null>",
-  "bio_add": "<若有重要新成果/奖项，用一句话中文描述并尽量附来源URL，否则 null>",
+  "bio_add": "<若有重要新成果/奖项，用一句话中文描述，否则 null>",
   "ach_add": "<若有可加入 achievements 的新奖项，给简短中文短语，否则 null>",
-  "email": "<若当前为空且能核实新邮箱则给，否则 null>",
-  "phone": "<若当前为空且能核实新电话则给，否则 null>",
+  "email": "<若当前为空且来源能核实新邮箱则给，否则 null>",
+  "phone": "<若当前为空且来源能核实新电话则给，否则 null>",
   "office": "<若变更则给新地址，否则 null>",
   "notes": "<任何不确定或需人工确认的事项，否则 null>",
   "sources": ["url1", "url2"]
-}`;
+}
+其中 sources 只填你实际引用的来源 URL（取自上面的 [1]..[n] 的 url）。`;
 }
 
 // ---------- 解析 LLM 返回的 JSON ----------
@@ -123,13 +168,15 @@ function parseJsonContent(content) {
   return {};
 }
 
-// ---------- 调用 LLM（含一次失败重试，去掉 response_format） ----------
+// ---------- 调用 LLM（OpenAI 兼容 chat/completions；含一次失败重试） ----------
 async function callLLM(prompt) {
+  if (!BASE_URL) throw new Error('缺少 LLM_BASE_URL，请在仓库 Secrets 中配置 LLM 的接口地址');
+  if (!MODEL) throw new Error('缺少 LLM_MODEL，请在仓库 Secrets 中配置模型名');
   const body = {
     model: MODEL,
     temperature: 0,
     messages: [
-      { role: 'system', content: '你是严谨的学者信息核查助手，仅基于可核实的公开来源回答，返回严格 JSON。' },
+      { role: 'system', content: '你是严谨的学者信息核查助手，仅基于给定的公开来源回答，返回严格 JSON。' },
       { role: 'user', content: prompt },
     ],
   };
@@ -152,15 +199,15 @@ async function callLLM(prompt) {
 
 // ---------- mock 模式（本地验证改写链路，不联网） ----------
 let _mockFirst = true;
-async function reviewProfessor(p) {
+async function reviewProfessor(p, results) {
   if (MOCK) {
     if (_mockFirst) {
       _mockFirst = false;
-      return { verified: true, confidence: 'medium', title: null, bio_add: '测试核查：样例新增成果（mock，不会进入线上）', ach_add: null, email: null, phone: null, office: null, notes: null, sources: ['https://example.com/mock'] };
+      return { verified: true, confidence: 'medium', title: null, bio_add: '测试核查：样例新增成果（mock，不会进入线上）', ach_add: null, email: null, phone: null, office: null, notes: null, sources: [(results[0] && results[0].url) || 'https://example.com/mock'] };
     }
     return { verified: true, confidence: 'high', title: null, bio_add: null, ach_add: null, email: null, phone: null, office: null, notes: null, sources: [] };
   }
-  const content = await callLLM(buildPrompt(p.obj));
+  const content = await callLLM(buildPrompt(p.obj, results));
   return parseJsonContent(content);
 }
 
@@ -206,7 +253,7 @@ function bumpMeta() {
   meta.lastUpdatedTime = isoNow;
   meta.updateLog.push({
     date: today,
-    changes: `内容审查与更新（GitHub Actions + LLM 联网核查）：高风险名单及滚动批次核查完成，部分记录已据公开来源修正/补全。详见 CONTENT_REVIEW.md。`,
+    changes: `内容审查与更新（GitHub Actions + 独立搜索API + LLM）：高风险名单及滚动批次核查完成，部分记录已据公开来源修正/补全。详见 CONTENT_REVIEW.md。`,
   });
   const newData = dataRaw.replace(mm[0], `const DATA_META = ${JSON.stringify(meta, null, 2)};`);
   fs.writeFileSync(DATA_PATH, newData);
@@ -220,7 +267,7 @@ function bumpMeta() {
 // ---------- 报告 ----------
 function appendReport(reviewed, anyChange) {
   const ts = new Date().toISOString();
-  let md = `\n## ${today} 内容核查（GitHub Actions${MOCK ? ' · MOCK' : ''}）\n\n`;
+  let md = `\n## ${today} 内容核查（GitHub Actions${MOCK ? ' · MOCK' : ' · 独立搜索+LLM'}）\n\n`;
   md += `- 运行时间(UTC)：${ts}\n- 审查人数：${reviewed.length}\n- 有数据变更：${anyChange ? '是' : '否'}\n\n`;
   for (const r of reviewed) {
     md += `### ${r.name}（id ${r.id}）\n`;
@@ -228,7 +275,8 @@ function appendReport(reviewed, anyChange) {
     const res = r.result || {};
     if (r.changes && r.changes.length) md += `- ✅ 已应用：${r.changes.join('；')}\n`;
     if (res.notes) md += `- 📝 需人工复核：${res.notes}\n`;
-    if (Array.isArray(res.sources) && res.sources.length) md += `- 🔗 来源：${res.sources.join('，')}\n`;
+    if (Array.isArray(r.searchUrls) && r.searchUrls.length) md += `- 🔎 检索来源：${r.searchUrls.join('，')}\n`;
+    if (Array.isArray(res.sources) && res.sources.length) md += `- 🔗 引用来源：${res.sources.join('，')}\n`;
     if (!r.changes?.length && !res.notes) md += `- ✓ 与公开来源一致，无需变更\n`;
   }
   let existing = '';
@@ -242,6 +290,10 @@ function appendReport(reviewed, anyChange) {
     console.error('[content-review] 缺少环境变量 LLM_API_KEY，请在仓库 Secrets 中添加后重试。');
     process.exit(1);
   }
+  if (!MOCK && !SEARCH_API_KEY) {
+    console.error('[content-review] 缺少搜索 API key（TAVILY_API_KEY），请在仓库 Secrets 中添加后重试。');
+    process.exit(1);
+  }
   const text = fs.readFileSync(DATA_PATH, 'utf8');
   const { lines, profLines } = loadProfessors(text);
   const idSet = selectBatch(profLines);
@@ -251,12 +303,20 @@ function appendReport(reviewed, anyChange) {
   for (const id of idSet) {
     const p = byId.get(id);
     if (!p) continue;
-    let result;
-    try { result = await reviewProfessor(p); }
-    catch (e) { reviewed.push({ id, name: p.obj.name, error: String(e.message || e) }); console.error(`核查 ${p.obj.name} 失败:`, e.message); continue; }
-    const changes = applyResult(p, result, today, result.sources || []);
+    let result, searchUrls = [], err;
+    try {
+      const results = await searchWeb(`${p.obj.name} ${p.obj.uni} 量子计算 教授 官方主页 最新成果 新晋`);
+      searchUrls = results.map((r) => r.url);
+      result = await reviewProfessor(p, results);
+    } catch (e) {
+      err = String(e.message || e);
+      console.error(`核查 ${p.obj.name} 失败:`, e.message);
+      reviewed.push({ id, name: p.obj.name, error: err });
+      continue;
+    }
+    const changes = applyResult(p, result);
     if (changes.length) { p.dirty = true; changeCount++; }
-    reviewed.push({ id, name: p.obj.name, result, changes });
+    reviewed.push({ id, name: p.obj.name, result, changes, searchUrls });
     if (!MOCK) await new Promise((r) => setTimeout(r, 600));
   }
   const anyChange = profLines.some((p) => p.dirty);

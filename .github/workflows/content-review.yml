@@ -36,6 +36,9 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          SEARCH_PROVIDER: ${{ secrets.SEARCH_PROVIDER }}
+          SEARCH_MAX: ${{ secrets.SEARCH_MAX }}
           MAX_REVIEWS: ${{ secrets.MAX_REVIEWS }}
         run: node scripts/content-review.js
 
